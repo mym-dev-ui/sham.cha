@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import StepIndicator from '@/components/StepIndicator';
+import { useVisitorContext } from '@/contexts/VisitorContext';
 
 export default function Step3Page() {
   const router = useRouter();
+  const { updateVisitorData, updateVisitorStep } = useVisitorContext();
   const [securityCode] = useState(() => {
     // Generate a mock security code
     return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -49,11 +51,12 @@ export default function Step3Page() {
     setError('');
     setIsSubmitting(true);
 
-    const existing = JSON.parse(sessionStorage.getItem('registrationData') || '{}');
-    sessionStorage.setItem(
-      'registrationData',
-      JSON.stringify({ ...existing, securityCode: enteredCode.trim().toUpperCase() })
-    );
+    // Update the current visitor in the global context
+    const visitorId = sessionStorage.getItem('currentVisitorId');
+    if (visitorId) {
+      updateVisitorData(visitorId, { securityCode: enteredCode.trim().toUpperCase() });
+      updateVisitorStep(visitorId, 3);
+    }
 
     await new Promise((r) => setTimeout(r, 400));
     router.push('/registration/step-4');
