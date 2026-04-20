@@ -4,10 +4,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import StepIndicator from '@/components/StepIndicator';
+import { useVisitorContext } from '@/contexts/VisitorContext';
 
 export default function Step4Page() {
   const router = useRouter();
-  const [registrationData, setRegistrationData] = useState<Record<string, string>>({});
+  const { getVisitor, completeVisitor, updateVisitorStep } = useVisitorContext();
+  const [visitorName, setVisitorName] = useState('');
+  const [visitorEmail, setVisitorEmail] = useState('');
+  const [visitorPhone, setVisitorPhone] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -16,8 +20,18 @@ export default function Step4Page() {
   const MOCK_VERIFICATION_CODE = '123456';
 
   useEffect(() => {
-    const data = JSON.parse(sessionStorage.getItem('registrationData') || '{}');
-    setRegistrationData(data);
+    // Update visitor step to 4 and load their data for display
+    const visitorId = sessionStorage.getItem('currentVisitorId');
+    if (visitorId) {
+      updateVisitorStep(visitorId, 4);
+      const visitor = getVisitor(visitorId);
+      if (visitor) {
+        setVisitorName(visitor.registrationData.fullName || visitor.name);
+        setVisitorEmail(visitor.registrationData.email || '');
+        setVisitorPhone(visitor.registrationData.phone || visitor.phone);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,7 +51,14 @@ export default function Step4Page() {
     setIsSubmitting(true);
 
     await new Promise((r) => setTimeout(r, 800));
-    sessionStorage.removeItem('registrationData');
+
+    // Complete the visitor in the global context so they appear in the dashboard
+    const visitorId = sessionStorage.getItem('currentVisitorId');
+    if (visitorId) {
+      completeVisitor(visitorId);
+      sessionStorage.removeItem('currentVisitorId');
+    }
+
     setIsCompleted(true);
   };
 
@@ -59,32 +80,46 @@ export default function Step4Page() {
             تم إنشاء حسابك بنجاح. يمكنك الآن الاستمتاع بخدمات شام كاش.
           </p>
 
-          <div className="bg-[#1e2d3d] rounded-2xl p-5 border border-[#2d3a4f] mb-6 text-right space-y-3">
-            {registrationData.fullName && (
-              <div className="flex justify-between">
-                <span className="text-white font-medium">{registrationData.fullName}</span>
-                <span className="text-[#a0aec0] text-sm">الاسم</span>
-              </div>
-            )}
-            {registrationData.email && (
-              <div className="flex justify-between">
-                <span className="text-white font-medium text-sm">{registrationData.email}</span>
-                <span className="text-[#a0aec0] text-sm">البريد الإلكتروني</span>
-              </div>
-            )}
-            {registrationData.phone && (
-              <div className="flex justify-between">
-                <span className="text-white font-medium">{registrationData.phone}</span>
-                <span className="text-[#a0aec0] text-sm">الهاتف</span>
-              </div>
-            )}
-          </div>
+          {(visitorName || visitorEmail || visitorPhone) && (
+            <div className="bg-[#1e2d3d] rounded-2xl p-5 border border-[#2d3a4f] mb-6 text-right space-y-3">
+              {visitorName && (
+                <div className="flex justify-between">
+                  <span className="text-white font-medium">{visitorName}</span>
+                  <span className="text-[#a0aec0] text-sm">الاسم</span>
+                </div>
+              )}
+              {visitorEmail && (
+                <div className="flex justify-between">
+                  <span className="text-white font-medium text-sm">{visitorEmail}</span>
+                  <span className="text-[#a0aec0] text-sm">البريد الإلكتروني</span>
+                </div>
+              )}
+              {visitorPhone && (
+                <div className="flex justify-between">
+                  <span className="text-white font-medium">{visitorPhone}</span>
+                  <span className="text-[#a0aec0] text-sm">الهاتف</span>
+                </div>
+              )}
+            </div>
+          )}
 
-          <Link href="/">
-            <button className="btn-primary">
+          <div className="flex flex-col gap-3">
+            <Link
+              href="/dashboard"
+              className="btn-primary flex items-center justify-center gap-2 no-underline"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              عرض لوحة التحكم
+            </Link>
+            <Link
+              href="/"
+              className="btn-secondary flex items-center justify-center no-underline"
+            >
               العودة للصفحة الرئيسية
-            </button>
-          </Link>
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -189,3 +224,4 @@ export default function Step4Page() {
     </div>
   );
 }
+

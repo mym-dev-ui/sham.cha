@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { VisitorProvider } from '@/contexts/VisitorContext';
 
 export const metadata: Metadata = {
   title: 'شام كاش - نظام إدارة الزوار',
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl">
-      <body>{children}</body>
+      <body>
+        <VisitorProvider>{children}</VisitorProvider>
+      </body>
     </html>
   );
 }

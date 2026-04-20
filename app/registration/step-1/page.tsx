@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import StepIndicator from '@/components/StepIndicator';
+import { useVisitorContext } from '@/contexts/VisitorContext';
 
 interface FormData {
   fullName: string;
@@ -20,6 +21,7 @@ interface FormErrors {
 
 export default function Step1Page() {
   const router = useRouter();
+  const { addVisitor } = useVisitorContext();
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
     phone: '',
@@ -72,9 +74,23 @@ export default function Step1Page() {
     if (!validate()) return;
 
     setIsSubmitting(true);
-    // Store data in sessionStorage for multi-step flow
-    sessionStorage.setItem('registrationData', JSON.stringify(formData));
-    // Simulate a brief loading state
+
+    // Create a new visitor in the global context (persisted to localStorage)
+    const visitorId = addVisitor({
+      name: formData.fullName.trim(),
+      phone: formData.phone.trim(),
+      currentStep: 1,
+      registrationData: {
+        fullName: formData.fullName.trim(),
+        phone: formData.phone.trim(),
+        idNumber: formData.idNumber.trim(),
+        address: formData.address.trim(),
+      },
+    });
+
+    // Store visitor ID in sessionStorage so subsequent steps know which visitor to update
+    sessionStorage.setItem('currentVisitorId', visitorId);
+
     await new Promise((r) => setTimeout(r, 400));
     router.push('/registration/step-2');
   };
