@@ -54,7 +54,9 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
   }, [visitors, initialized]);
 
   const addVisitor = useCallback((data: Partial<Visitor>): string => {
-    const id = `visitor_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const id = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `visitor_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     const newVisitor: Visitor = {
       name: data.name || 'زائر جديد',
       phone: data.phone || '',
