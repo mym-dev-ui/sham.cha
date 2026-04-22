@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useVisitorContext as useVisitors } from '@/contexts/VisitorContext';
 import { useNewVisitorSound } from '@/hooks/useNewVisitorSound';
 import { Visitor, VisitorStep, STEP_LABELS, STEP_COLORS } from '@/lib/types';
 import TransferVisitorModal from '@/components/TransferVisitorModal';
 import VisitorStepBadge from '@/components/VisitorStepBadge';
+import DashboardGuard from '@/components/DashboardGuard';
 
 const STEP_ICONS: Record<string, string> = {
   '1': '👤',
@@ -16,7 +18,8 @@ const STEP_ICONS: Record<string, string> = {
   'password-reset': '🔑',
 };
 
-export default function DashboardPage() {
+function DashboardContent() {
+  const router = useRouter();
   const {
     visitors,
     transferVisitor,
@@ -26,6 +29,11 @@ export default function DashboardPage() {
   } = useVisitors();
 
   useNewVisitorSound(visitors.length);
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('dashboard_auth');
+    router.push('/login');
+  };
 
   const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
   const [showTransferModal, setShowTransferModal] = useState(false);
@@ -98,6 +106,15 @@ export default function DashboardPage() {
               </svg>
               الرئيسية
             </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              خروج
+            </button>
           </div>
         </div>
       </nav>
@@ -324,5 +341,13 @@ export default function DashboardPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <DashboardGuard>
+      <DashboardContent />
+    </DashboardGuard>
   );
 }
