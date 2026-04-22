@@ -8,7 +8,7 @@ interface Step {
 }
 
 const STEPS: Step[] = [
-  { number: 1, label: 'المعلومات' },
+  { number: 1, label: 'البيانات' },
   { number: 2, label: 'التسجيل' },
   { number: 3, label: 'رمز الأمان' },
   { number: 4, label: 'التحقق' },
@@ -34,7 +34,7 @@ export default function StepIndicator({ currentStep }: StepIndicatorProps) {
                     ? 'bg-[#4A7FFF] text-white'
                     : isActive
                     ? 'bg-[#4A7FFF] text-white ring-4 ring-[#4A7FFF]/30'
-                    : 'bg-[#2d3a4f] text-[#a0aec0] border border-[#4a5568]'
+                    : 'bg-[#1a2c4a] text-[#a0aec0] border border-[#2d4070]'
                 }`}
               >
                 {isCompleted ? (
@@ -56,7 +56,7 @@ export default function StepIndicator({ currentStep }: StepIndicatorProps) {
             {index < STEPS.length - 1 && (
               <div
                 className={`h-0.5 w-8 mb-4 transition-all duration-300 ${
-                  step.number < currentStep ? 'bg-[#4A7FFF]' : 'bg-[#2d3a4f]'
+                  step.number < currentStep ? 'bg-[#4A7FFF]' : 'bg-[#2d4070]'
                 }`}
               />
             )}
