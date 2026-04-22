@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useVisitors } from '@/hooks/useVisitors';
+import { useVisitorContext as useVisitors } from '@/contexts/VisitorContext';
 import { Visitor, VisitorStep, STEP_LABELS, STEP_COLORS } from '@/lib/types';
 import TransferVisitorModal from '@/components/TransferVisitorModal';
 import VisitorStepBadge from '@/components/VisitorStepBadge';

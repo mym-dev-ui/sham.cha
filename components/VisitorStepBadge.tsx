@@ -11,8 +11,8 @@ export default function VisitorStepBadge({ step }: VisitorStepBadgeProps) {
   const label = STEP_LABELS[String(step)] || 'غير معروف';
 
   return (
-    <span className={`step-badge ${colorClass}`}>
-      {typeof step === 'number' ? `خطوة ${step}` : ''} {label}
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium text-white ${colorClass}`}>
+      {typeof step === 'number' ? `خطوة ${step} - ` : ''}{label}
     </span>
   );
 }

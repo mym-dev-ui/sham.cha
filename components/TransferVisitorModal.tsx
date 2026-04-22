@@ -139,7 +139,7 @@ export default function TransferVisitorModal({
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 btn-secondary py-3 text-sm"
+            className="flex-1 py-3 rounded-xl text-sm font-medium bg-[#2d3a4f] hover:bg-[#3a4a5f] text-[#a0aec0] hover:text-white transition-all duration-200"
           >
             إلغاء
           </button>
