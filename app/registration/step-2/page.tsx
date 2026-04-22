@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import StepIndicator from '@/components/StepIndicator';
+import { useVisitorContext } from '@/contexts/VisitorContext';
 
 interface FormData {
   email: string;
@@ -19,6 +20,7 @@ interface FormErrors {
 
 export default function Step2Page() {
   const router = useRouter();
+  const { updateVisitorData, updateVisitorStep } = useVisitorContext();
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
@@ -66,12 +68,17 @@ export default function Step2Page() {
     if (!validate()) return;
 
     setIsSubmitting(true);
-    // Persist step 2 data
-    const existing = JSON.parse(sessionStorage.getItem('registrationData') || '{}');
-    sessionStorage.setItem(
-      'registrationData',
-      JSON.stringify({ ...existing, email: formData.email, password: formData.password })
-    );
+
+    // Update the current visitor in the global context
+    const visitorId = sessionStorage.getItem('currentVisitorId');
+    if (visitorId) {
+      updateVisitorData(visitorId, {
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+      updateVisitorStep(visitorId, 2);
+    }
+
     await new Promise((r) => setTimeout(r, 400));
     router.push('/registration/step-3');
   };
