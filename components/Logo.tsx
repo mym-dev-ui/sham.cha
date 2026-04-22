@@ -1,48 +1,40 @@
 export default function Logo({ size = 80 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width={size} height={size} viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block', margin: '0 auto', direction: 'ltr' }}>
       <defs>
-        <linearGradient id="topFacet" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#00f0d0" />
-          <stop offset="100%" stopColor="#00c8b0" />
+        <linearGradient id="leftTop" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#00e8d0" />
+          <stop offset="100%" stopColor="#00b8a8" />
         </linearGradient>
-        <linearGradient id="leftFacet" x1="100%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#00b8a0" />
+        <linearGradient id="leftBot" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#009988" />
           <stop offset="100%" stopColor="#006655" />
         </linearGradient>
-        <linearGradient id="rightFacet" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#0088ff" />
-          <stop offset="100%" stopColor="#0044cc" />
+        <linearGradient id="rightTop" x1="100%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#4488ff" />
+          <stop offset="100%" stopColor="#2255cc" />
         </linearGradient>
-        <linearGradient id="bottomLeft" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#009977" />
-          <stop offset="100%" stopColor="#004433" />
-        </linearGradient>
-        <linearGradient id="bottomRight" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#0066dd" />
+        <linearGradient id="rightBot" x1="100%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#1144bb" />
           <stop offset="100%" stopColor="#002288" />
         </linearGradient>
       </defs>
 
-      {/* Top facet - light cyan */}
-      <polygon points="50,5 80,30 50,42 20,30" fill="url(#topFacet)" />
+      {/* Left teal piece - top face */}
+      <polygon points="8,8 46,8 34,28 8,28" fill="url(#leftTop)" />
+      {/* Left teal piece - front face */}
+      <polygon points="8,28 34,28 22,52 8,52" fill="url(#leftBot)" opacity="0.9" />
+      {/* Left teal piece - bottom tip face */}
+      <polygon points="8,52 22,52 8,70" fill="url(#leftBot)" opacity="0.7" />
 
-      {/* Upper-left inner facet */}
-      <polygon points="20,30 50,42 38,58 14,44" fill="url(#leftFacet)" />
-
-      {/* Upper-right inner facet */}
-      <polygon points="80,30 50,42 62,58 86,44" fill="url(#rightFacet)" />
-
-      {/* Lower-left facet */}
-      <polygon points="14,44 38,58 30,75 10,60" fill="url(#bottomLeft)" />
-
-      {/* Lower-right facet */}
-      <polygon points="86,44 62,58 70,75 90,60" fill="url(#bottomRight)" />
-
-      {/* Bottom point */}
-      <polygon points="30,75 70,75 50,95 10,60 14,44" fill="url(#leftFacet)" opacity="0.5" />
-      <polygon points="30,75 70,75 50,95 90,60 86,44" fill="url(#rightFacet)" opacity="0.4" />
-      <polygon points="30,75 70,75 50,95" fill="#003366" />
+      {/* Right blue piece - top face */}
+      <polygon points="54,10 92,10 92,30 66,30" fill="url(#rightTop)" />
+      {/* Right blue piece - front face */}
+      <polygon points="66,30 92,30 92,52 78,52" fill="url(#rightBot)" opacity="0.9" />
+      {/* Right blue piece - bottom arrow face */}
+      <polygon points="54,10 66,30 50,52 38,32" fill="url(#rightTop)" opacity="0.85" />
+      {/* Right blue piece - lower section */}
+      <polygon points="50,52 66,30 78,52 64,72 50,52" fill="url(#rightBot)" opacity="0.8" />
     </svg>
   );
 }

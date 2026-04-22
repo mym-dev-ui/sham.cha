@@ -20,7 +20,7 @@ interface StepIndicatorProps {
 
 export default function StepIndicator({ currentStep }: StepIndicatorProps) {
   return (
-    <div className="flex items-center justify-center gap-2 mb-8 w-full">
+    <div className="flex items-center justify-center gap-2 mb-8 w-full" dir="ltr">
       {STEPS.map((step, index) => {
         const isCompleted = step.number < currentStep;
         const isActive = step.number === currentStep;
