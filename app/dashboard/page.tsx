@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useVisitorContext as useVisitors } from '@/contexts/VisitorContext';
+import { useNewVisitorSound } from '@/hooks/useNewVisitorSound';
 import { Visitor, VisitorStep, STEP_LABELS, STEP_COLORS } from '@/lib/types';
 import TransferVisitorModal from '@/components/TransferVisitorModal';
 import VisitorStepBadge from '@/components/VisitorStepBadge';
@@ -23,6 +24,8 @@ export default function DashboardPage() {
     removeVisitor,
     addVisitor,
   } = useVisitors();
+
+  useNewVisitorSound(visitors.length);
 
   const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
   const [showTransferModal, setShowTransferModal] = useState(false);
