@@ -133,9 +133,9 @@ function VisitorFilePanel({ visitor, realIndex, onTransfer, onApprove, onReject,
   const st = STATUS_CFG[visitor.status] ?? STATUS_CFG.active;
   const rd = visitor.registrationData;
   const stepColor = STEP_COLORS[String(visitor.currentStep)] ?? 'bg-gray-500';
-  const stepNum = typeof visitor.currentStep === 'number' ? visitor.currentStep : 0;
+  const stepNum = typeof visitor.currentStep === 'number' ? visitor.currentStep : null;
   const stepLabel = STEP_LABELS[String(visitor.currentStep)] ?? String(visitor.currentStep);
-  const isNumericStep = typeof visitor.currentStep === 'number';
+  const isNumericStep = stepNum !== null;
   const isCompleted = visitor.status === 'completed';
   const isRejected = visitor.status === 'rejected';
   const isClosed = isCompleted || isRejected;
@@ -162,7 +162,7 @@ function VisitorFilePanel({ visitor, realIndex, onTransfer, onApprove, onReject,
             <p className="text-[#4a5568] text-[10px] mb-1.5 text-center">{isNumericStep ? `${stepNum} / ${TOTAL_STEPS}` : stepLabel}</p>
             {isNumericStep ? (
               <div className="flex gap-1">
-                {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map(s => (<div key={s} className={`w-8 h-2 rounded-full transition-all duration-300 ${s <= stepNum ? stepColor : 'bg-[#2d3a4f]'}`} />))}
+                {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map(s => (<div key={s} className={`w-8 h-2 rounded-full transition-all duration-300 ${s <= (stepNum ?? 0) ? stepColor : 'bg-[#2d3a4f]'}`} />))}
               </div>
             ) : (
               <div className={`text-[10px] px-2 py-1 rounded-full text-white font-medium text-center ${stepColor}`}>{stepLabel}</div>
