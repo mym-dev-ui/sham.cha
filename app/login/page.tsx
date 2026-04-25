@@ -119,7 +119,17 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p className="text-center text-gray-600 text-xs mt-6">
+        <div className="text-center mt-4">
+          <button
+            type="button"
+            onClick={() => router.push('/password-reset')}
+            className="text-blue-400 hover:text-blue-300 transition-colors text-sm"
+          >
+            نسيت كلمة المرور؟
+          </button>
+        </div>
+
+        <p className="text-center text-gray-600 text-xs mt-4">
           للدخول كمسؤول استخدم البريد وكلمة المرور المخصصة
         </p>
       </div>
