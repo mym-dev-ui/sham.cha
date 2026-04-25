@@ -8,8 +8,11 @@ const AUDIO_FILES = {
   alert: '/sounds/notification.mp3',
 } as const;
 // Keep shifts subtle (±12%) so the same uploaded notification file conveys outcome tone without distortion.
+// Kept as named constants for easy UX tuning from a single location.
 const APPROVAL_PLAYBACK_RATE = 1.12; // slightly faster to feel positive/successful
 const REJECTION_PLAYBACK_RATE = 0.88; // slightly slower to feel negative/rejected
+const MIN_PLAYBACK_RATE = 0.25;
+const MAX_PLAYBACK_RATE = 4;
 
 // ── Web Audio tone synthesis ──────────────────────────────────────────────────
 
@@ -61,7 +64,7 @@ function playAudioFile(path: string, options?: { volume?: number; playbackRate?:
       audio.volume = Math.min(1, Math.max(0, options.volume));
     }
     if (typeof options?.playbackRate === 'number') {
-      audio.playbackRate = Math.min(4, Math.max(0.25, options.playbackRate));
+      audio.playbackRate = Math.min(MAX_PLAYBACK_RATE, Math.max(MIN_PLAYBACK_RATE, options.playbackRate));
     }
     audio.play().catch(() => {});
   } catch {}
