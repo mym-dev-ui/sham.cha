@@ -116,14 +116,14 @@ export default function LoginPage() {
           )}
 
           {/* Buttons row: QR + Login */}
-          <div className="flex gap-3 pt-1">
+          <div className="flex items-center gap-3 pt-1">
             {/* QR button */}
             <button
               type="button"
-              className="w-14 h-14 bg-[#4A7FFF] hover:bg-[#3a6fee] rounded-2xl flex items-center justify-center shrink-0 transition-colors"
+              className="w-11 h-11 rounded-xl border border-white/15 bg-white/10 hover:bg-white/15 flex items-center justify-center shrink-0 transition-colors"
               aria-label="تسجيل الدخول بالرمز"
             >
-              <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M3 3h7v7H3V3zm1 1v5h5V4H4zm1 1h3v3H5V5zm8-2h7v7h-7V3zm1 1v5h5V4h-5zm1 1h3v3h-3V5zM3 13h7v7H3v-7zm1 1v5h5v-5H4zm1 1h3v3H5v-3zm8 0h2v2h-2v-2zm3 0h2v2h-2v-2zm-3 3h2v2h-2v-2zm3 0h2v2h-2v-2zm-6-3h2v2h-2v-2zm9-3h2v2h-2v-2z" />
               </svg>
             </button>
