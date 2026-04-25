@@ -49,6 +49,16 @@ function DashboardContent() {
     setTimeout(() => setLastTransferred(null), 2000);
   };
 
+  const handleComplete = (visitorId: string) => {
+    completeVisitor(visitorId);
+    play();
+  };
+
+  const handleRemove = (visitorId: string) => {
+    removeVisitor(visitorId);
+    play();
+  };
+
   const handleAddTestVisitor = () => {
     const names = ['محمد عبدالله', 'سارة أحمد', 'عمر الحسن', 'نورا محمد', 'يوسف علي'];
     const randomName = names[Math.floor(Math.random() * names.length)];
@@ -304,7 +314,7 @@ function DashboardContent() {
 
                       {visitor.status !== 'completed' && (
                         <button
-                          onClick={() => { completeVisitor(visitor.id); play(); }}
+                          onClick={() => handleComplete(visitor.id)}
                           className="px-3 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20 hover:border-green-500/40 transition-all duration-200"
                           title="إتمام"
                         >
@@ -315,7 +325,7 @@ function DashboardContent() {
                       )}
 
                       <button
-                        onClick={() => { removeVisitor(visitor.id); play(); }}
+                        onClick={() => handleRemove(visitor.id)}
                         className="px-3 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:border-red-500/40 transition-all duration-200"
                         title="حذف"
                       >
