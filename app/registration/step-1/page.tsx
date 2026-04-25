@@ -82,7 +82,7 @@ export default function Step1Page() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) {
-      setFormError('يرجى تصحيح الحقول المظللة بالأحمر للمتابعة');
+      setFormError('يرجى تصحيح الحقول المميزة بالأحمر للمتابعة');
       play('alert');
       return;
     }
