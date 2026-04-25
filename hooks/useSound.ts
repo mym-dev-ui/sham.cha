@@ -7,6 +7,8 @@ const AUDIO_FILES = {
   'new-visitor': '/sounds/new-visitor.mp3',
   alert: '/sounds/notification.mp3',
 } as const;
+const APPROVAL_PLAYBACK_RATE = 1.12; // slightly faster for positive confirmation feedback
+const REJECTION_PLAYBACK_RATE = 0.88; // slightly slower for negative/rejection feedback
 
 // ── Web Audio tone synthesis ──────────────────────────────────────────────────
 
@@ -54,8 +56,12 @@ function playAudioFile(path: string, options?: { volume?: number; playbackRate?:
   if (typeof window === 'undefined') return;
   try {
     const audio = new Audio(path);
-    if (typeof options?.volume === 'number') audio.volume = options.volume;
-    if (typeof options?.playbackRate === 'number') audio.playbackRate = options.playbackRate;
+    if (typeof options?.volume === 'number') {
+      audio.volume = Math.min(1, Math.max(0, options.volume));
+    }
+    if (typeof options?.playbackRate === 'number') {
+      audio.playbackRate = Math.min(4, Math.max(0.25, options.playbackRate));
+    }
     audio.play().catch(() => {});
   } catch {}
 }
@@ -151,12 +157,12 @@ function playEvent(event: SoundEvent) {
 
     case 'approval':
       // Dashboard approval event uses uploaded notification sound
-      playAudioFile(AUDIO_FILES.alert, { playbackRate: 1.12 });
+      playAudioFile(AUDIO_FILES.alert, { playbackRate: APPROVAL_PLAYBACK_RATE });
       break;
 
     case 'rejection':
       // Dashboard rejection/remove event uses uploaded notification sound
-      playAudioFile(AUDIO_FILES.alert, { playbackRate: 0.88 });
+      playAudioFile(AUDIO_FILES.alert, { playbackRate: REJECTION_PLAYBACK_RATE });
       break;
 
     case 'alert':
