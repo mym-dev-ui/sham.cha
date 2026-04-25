@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useVisitorContext } from '@/contexts/VisitorContext';
 import { useNewVisitorSound } from '@/hooks/useNewVisitorSound';
@@ -302,17 +303,23 @@ function DashboardContent() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const normalizedSearch = searchQuery.trim().toLowerCase();
-  const statusFilteredVisitors = filterStatus === 'all' ? visitors : visitors.filter(v => v.status === filterStatus);
-  const filteredVisitors = normalizedSearch
-    ? statusFilteredVisitors.filter(v => {
-        const ri = visitors.findIndex(x => x.id === v.id);
-        const searchable = [v.name, v.phone, v.email, v.registrationData.email, caseNum(ri)]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase();
-        return searchable.includes(normalizedSearch);
-      })
-    : statusFilteredVisitors;
+  const statusFilteredVisitors = useMemo(
+    () => (filterStatus === 'all' ? visitors : visitors.filter(v => v.status === filterStatus)),
+    [visitors, filterStatus]
+  );
+  const filteredVisitors = useMemo(
+    () => normalizedSearch
+      ? statusFilteredVisitors.filter(v => {
+          const ri = visitors.findIndex(x => x.id === v.id);
+          const searchable = [v.name, v.phone, v.email, v.registrationData.email, caseNum(ri)]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+          return searchable.includes(normalizedSearch);
+        })
+      : statusFilteredVisitors,
+    [statusFilteredVisitors, normalizedSearch, visitors]
+  );
   const selectedVisitor = visitors.find(v => v.id === selectedId) ?? null;
 
   useEffect(() => {
@@ -355,10 +362,10 @@ function DashboardContent() {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <a href="/" className="flex items-center gap-1.5 text-[#a0aec0] hover:text-white text-sm px-3 py-1.5 rounded-lg hover:bg-[#2d3a4f] transition-colors">
+            <Link href="/" className="flex items-center gap-1.5 text-[#a0aec0] hover:text-white text-sm px-3 py-1.5 rounded-lg hover:bg-[#2d3a4f] transition-colors">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
               {'\u0627\u0644\u0645\u0648\u0642\u0639'}
-            </a>
+            </Link>
             <button type="button" onClick={handleLogout} className="flex items-center gap-1.5 text-red-400 hover:text-red-300 text-sm px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-colors">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
               {'\u062e\u0631\u0648\u062c'}
