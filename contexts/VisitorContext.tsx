@@ -17,6 +17,7 @@ interface VisitorContextType {
   updateVisitorData: (visitorId: string, data: Partial<RegistrationData>) => void;
   transferVisitor: (visitorId: string, targetStep: VisitorStep) => void;
   completeVisitor: (visitorId: string) => void;
+  setVisitorStatus: (visitorId: string, status: Visitor['status']) => void;
   removeVisitor: (visitorId: string) => void;
   getVisitor: (visitorId: string) => Visitor | undefined;
 }
@@ -107,6 +108,12 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const setVisitorStatus = useCallback((visitorId: string, status: Visitor['status']) => {
+    setVisitors((prev) =>
+      prev.map((v) => (v.id === visitorId ? { ...v, status } : v))
+    );
+  }, []);
+
   const removeVisitor = useCallback((visitorId: string) => {
     setVisitors((prev) => prev.filter((v) => v.id !== visitorId));
   }, []);
@@ -125,6 +132,7 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
         updateVisitorData,
         transferVisitor,
         completeVisitor,
+        setVisitorStatus,
         removeVisitor,
         getVisitor,
       }}
