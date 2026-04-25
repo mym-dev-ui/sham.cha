@@ -17,6 +17,8 @@ interface VisitorContextType {
   updateVisitorData: (visitorId: string, data: Partial<RegistrationData>) => void;
   transferVisitor: (visitorId: string, targetStep: VisitorStep) => void;
   completeVisitor: (visitorId: string) => void;
+  rejectVisitor: (visitorId: string) => void;
+  setVisitorPending: (visitorId: string) => void;
   removeVisitor: (visitorId: string) => void;
   getVisitor: (visitorId: string) => Visitor | undefined;
 }
@@ -42,6 +44,14 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setVisitors(loadFromStorage());
     setInitialized(true);
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) {
+        setVisitors(loadFromStorage());
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   useEffect(() => {
@@ -107,6 +117,22 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const rejectVisitor = useCallback((visitorId: string) => {
+    setVisitors((prev) =>
+      prev.map((v) =>
+        v.id === visitorId ? { ...v, status: 'rejected' as const } : v
+      )
+    );
+  }, []);
+
+  const setVisitorPending = useCallback((visitorId: string) => {
+    setVisitors((prev) =>
+      prev.map((v) =>
+        v.id === visitorId ? { ...v, status: 'pending' as const } : v
+      )
+    );
+  }, []);
+
   const removeVisitor = useCallback((visitorId: string) => {
     setVisitors((prev) => prev.filter((v) => v.id !== visitorId));
   }, []);
@@ -125,6 +151,8 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
         updateVisitorData,
         transferVisitor,
         completeVisitor,
+        rejectVisitor,
+        setVisitorPending,
         removeVisitor,
         getVisitor,
       }}
