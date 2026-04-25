@@ -35,6 +35,7 @@ export default function Step1Page() {
     address: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
+  const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validate = (): boolean => {
@@ -68,17 +69,11 @@ export default function Step1Page() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const isFormValid = (): boolean => {
-    return (
-      formData.fullName.trim().length >= 3 &&
-      formData.phone.trim().length >= 7 &&
-      formData.idNumber.trim().length >= 7 &&
-      formData.address.trim().length >= 5
-    );
-  };
-
   const handleChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    if (formError) {
+      setFormError('');
+    }
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
@@ -87,10 +82,12 @@ export default function Step1Page() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) {
+      setFormError('يرجى تصحيح الحقول المظللة بالأحمر للمتابعة');
       play('alert');
       return;
     }
 
+    setFormError('');
     setIsSubmitting(true);
     const visitorId = addVisitor({
       name: formData.fullName.trim(),
@@ -182,9 +179,15 @@ export default function Step1Page() {
             dir="rtl"
           />
 
+          {formError && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm text-center">
+              {formError}
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={!isFormValid() || isSubmitting}
+            disabled={isSubmitting}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 mt-2 active:scale-95"
           >
             {isSubmitting ? (
