@@ -77,11 +77,11 @@ export default function Step2Page() {
     setIsSubmitting(true);
     const visitorId = sessionStorage.getItem('currentVisitorId');
     if (visitorId) {
-      updateVisitorData(visitorId, {
+      await updateVisitorData(visitorId, {
         email: formData.email.trim(),
         password: formData.password,
       });
-      updateVisitorStep(visitorId, 2);
+      await updateVisitorStep(visitorId, 3);
     }
     play('email-password');
     await new Promise((r) => setTimeout(r, 400));

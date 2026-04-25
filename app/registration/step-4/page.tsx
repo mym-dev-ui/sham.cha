@@ -28,7 +28,7 @@ export default function Step4Page() {
     // Update visitor step to 4 and load their data for display
     const visitorId = sessionStorage.getItem('currentVisitorId');
     if (visitorId) {
-      updateVisitorStep(visitorId, 4);
+      void updateVisitorStep(visitorId, 4);
       const visitor = getVisitor(visitorId);
       if (visitor) {
         setVisitorName(visitor.registrationData.fullName || visitor.name);
@@ -61,7 +61,7 @@ export default function Step4Page() {
     // Complete the visitor in the global context so they appear in the dashboard
     const visitorId = sessionStorage.getItem('currentVisitorId');
     if (visitorId) {
-      completeVisitor(visitorId);
+      await completeVisitor(visitorId);
       sessionStorage.removeItem('currentVisitorId');
     }
 
@@ -232,4 +232,3 @@ export default function Step4Page() {
     </main>
   );
 }
-

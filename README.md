@@ -7,12 +7,12 @@
 - تسجيل دخول المستخدمين
 - عرض بيانات الزوار في لوحة التحكم
 - قبول / رفض الطلبات
-- ربط مع Firebase
-- تحديث مباشر للبيانات (Realtime)
+- ربط حي بين الموقع ولوحة التحكم عبر API
+- تحديث شبه لحظي للبيانات (Polling + Server Store)
 
 ## 🖥️ التقنيات المستخدمة
 - Next.js
-- Firebase (Database)
+- Next.js API Routes
 - Tailwind CSS
 - Vercel (Deployment)
 

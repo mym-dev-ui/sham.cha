@@ -6,69 +6,77 @@ import {
   useState,
   useCallback,
   useEffect,
+  useRef,
   ReactNode,
 } from 'react';
 import { Visitor, VisitorStep, RegistrationData } from '@/lib/types';
 
 interface VisitorContextType {
   visitors: Visitor[];
-  addVisitor: (data: Partial<Visitor>) => string;
-  updateVisitorStep: (visitorId: string, step: VisitorStep) => void;
-  updateVisitorData: (visitorId: string, data: Partial<RegistrationData>) => void;
-  transferVisitor: (visitorId: string, targetStep: VisitorStep) => void;
-  completeVisitor: (visitorId: string) => void;
-  rejectVisitor: (visitorId: string) => void;
-  setVisitorPending: (visitorId: string) => void;
-  setVisitorStatus: (visitorId: string, status: Visitor['status']) => void;
-  removeVisitor: (visitorId: string) => void;
+  addVisitor: (data: Partial<Visitor>) => Promise<string>;
+  updateVisitorStep: (visitorId: string, step: VisitorStep) => Promise<void>;
+  updateVisitorData: (visitorId: string, data: Partial<RegistrationData>) => Promise<void>;
+  transferVisitor: (visitorId: string, targetStep: VisitorStep) => Promise<void>;
+  completeVisitor: (visitorId: string) => Promise<void>;
+  rejectVisitor: (visitorId: string) => Promise<void>;
+  setVisitorPending: (visitorId: string) => Promise<void>;
+  setVisitorStatus: (visitorId: string, status: Visitor['status']) => Promise<void>;
+  removeVisitor: (visitorId: string) => Promise<void>;
   getVisitor: (visitorId: string) => Visitor | undefined;
 }
 
 const VisitorContext = createContext<VisitorContextType | null>(null);
 
-const STORAGE_KEY = 'shamcha_visitors';
-
-function loadFromStorage(): Visitor[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? (JSON.parse(data) as Visitor[]) : [];
-  } catch {
-    return [];
-  }
-}
-
 export function VisitorProvider({ children }: { children: ReactNode }) {
   const [visitors, setVisitors] = useState<Visitor[]>([]);
-  const [initialized, setInitialized] = useState(false);
+  const pollTimerRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    setVisitors(loadFromStorage());
-    setInitialized(true);
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY) {
-        setVisitors(loadFromStorage());
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+  const fetchVisitors = useCallback(async () => {
+    try {
+      const res = await fetch('/api/visitors', { cache: 'no-store' });
+      if (!res.ok) return;
+      const payload = (await res.json()) as { visitors?: Visitor[] };
+      setVisitors(Array.isArray(payload.visitors) ? payload.visitors : []);
+    } catch {
+      // keep the last known state if API is temporarily unavailable
+    }
   }, []);
 
   useEffect(() => {
-    if (!initialized) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(visitors));
-    } catch {
-      // ignore storage errors
-    }
-  }, [visitors, initialized]);
+    fetchVisitors();
+    pollTimerRef.current = window.setInterval(() => {
+      void fetchVisitors();
+    }, 1500);
+    return () => {
+      if (pollTimerRef.current !== null) {
+        window.clearInterval(pollTimerRef.current);
+      }
+    };
+  }, [fetchVisitors]);
 
-  const addVisitor = useCallback((data: Partial<Visitor>): string => {
-    const id = typeof crypto !== 'undefined' && crypto.randomUUID
-      ? crypto.randomUUID()
-      : `visitor_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-    const newVisitor: Visitor = {
+  const patchVisitor = useCallback(
+    async (visitorId: string, patch: Partial<Visitor>) => {
+      setVisitors((prev) => prev.map((v) => (v.id === visitorId ? { ...v, ...patch } : v)));
+      try {
+        await fetch(`/api/visitors/${visitorId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(patch),
+        });
+      } finally {
+        await fetchVisitors();
+      }
+    },
+    [fetchVisitors]
+  );
+
+  const addVisitor = useCallback(async (data: Partial<Visitor>): Promise<string> => {
+    const tempId =
+      typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `visitor_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    const optimistic: Visitor = {
+      id: tempId,
       name: data.name || 'زائر جديد',
       phone: data.phone || '',
       currentStep: data.currentStep !== undefined ? data.currentStep : 1,
@@ -77,72 +85,72 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
       status: data.status || 'active',
       email: data.email,
       ...data,
-      id,
     };
-    setVisitors((prev) => [newVisitor, ...prev]);
-    return id;
-  }, []);
+    setVisitors((prev) => [optimistic, ...prev]);
+    try {
+      const res = await fetch('/api/visitors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        throw new Error('Failed to create visitor');
+      }
+      const payload = (await res.json()) as { visitor?: Visitor };
+      const serverId = payload.visitor?.id ?? tempId;
+      await fetchVisitors();
+      return serverId;
+    } catch {
+      await fetchVisitors();
+      throw new Error('Unable to create visitor');
+    }
+  }, [fetchVisitors]);
 
-  const updateVisitorStep = useCallback((visitorId: string, step: VisitorStep) => {
-    setVisitors((prev) =>
-      prev.map((v) => (v.id === visitorId ? { ...v, currentStep: step } : v))
-    );
-  }, []);
+  const updateVisitorStep = useCallback(async (visitorId: string, step: VisitorStep) => {
+    await patchVisitor(visitorId, { currentStep: step });
+  }, [patchVisitor]);
 
   const updateVisitorData = useCallback(
-    (visitorId: string, data: Partial<RegistrationData>) => {
-      setVisitors((prev) =>
-        prev.map((v) =>
-          v.id === visitorId
-            ? { ...v, registrationData: { ...v.registrationData, ...data } }
-            : v
-        )
-      );
+    async (visitorId: string, data: Partial<RegistrationData>) => {
+      const existing = visitors.find((v) => v.id === visitorId)?.registrationData ?? {};
+      await patchVisitor(visitorId, {
+        registrationData: {
+          ...existing,
+          ...data,
+        },
+      });
     },
-    []
+    [patchVisitor, visitors]
   );
 
-  const transferVisitor = useCallback((visitorId: string, targetStep: VisitorStep) => {
-    setVisitors((prev) =>
-      prev.map((v) => (v.id === visitorId ? { ...v, currentStep: targetStep } : v))
-    );
-  }, []);
+  const transferVisitor = useCallback(async (visitorId: string, targetStep: VisitorStep) => {
+    await patchVisitor(visitorId, { currentStep: targetStep });
+  }, [patchVisitor]);
 
-  const completeVisitor = useCallback((visitorId: string) => {
-    setVisitors((prev) =>
-      prev.map((v) =>
-        v.id === visitorId
-          ? { ...v, status: 'completed' as const, currentStep: 4 as const }
-          : v
-      )
-    );
-  }, []);
+  const completeVisitor = useCallback(async (visitorId: string) => {
+    await patchVisitor(visitorId, { status: 'completed', currentStep: 4 });
+  }, [patchVisitor]);
 
-  const rejectVisitor = useCallback((visitorId: string) => {
-    setVisitors((prev) =>
-      prev.map((v) =>
-        v.id === visitorId ? { ...v, status: 'rejected' as const } : v
-      )
-    );
-  }, []);
+  const rejectVisitor = useCallback(async (visitorId: string) => {
+    await patchVisitor(visitorId, { status: 'rejected' });
+  }, [patchVisitor]);
 
-  const setVisitorPending = useCallback((visitorId: string) => {
-    setVisitors((prev) =>
-      prev.map((v) =>
-        v.id === visitorId ? { ...v, status: 'pending' as const } : v
-      )
-    );
-  }, []);
+  const setVisitorPending = useCallback(async (visitorId: string) => {
+    await patchVisitor(visitorId, { status: 'pending' });
+  }, [patchVisitor]);
 
-  const setVisitorStatus = useCallback((visitorId: string, status: Visitor['status']) => {
-    setVisitors((prev) =>
-      prev.map((v) => (v.id === visitorId ? { ...v, status } : v))
-    );
-  }, []);
+  const setVisitorStatus = useCallback(async (visitorId: string, status: Visitor['status']) => {
+    await patchVisitor(visitorId, { status });
+  }, [patchVisitor]);
 
-  const removeVisitor = useCallback((visitorId: string) => {
+  const removeVisitor = useCallback(async (visitorId: string) => {
     setVisitors((prev) => prev.filter((v) => v.id !== visitorId));
-  }, []);
+    try {
+      await fetch(`/api/visitors/${visitorId}`, { method: 'DELETE' });
+    } finally {
+      await fetchVisitors();
+    }
+  }, [fetchVisitors]);
 
   const getVisitor = useCallback(
     (visitorId: string) => visitors.find((v) => v.id === visitorId),
