@@ -11,13 +11,11 @@ import { useVisitorContext } from '@/contexts/VisitorContext';
 interface FormData {
   email: string;
   password: string;
-  confirmPassword: string;
 }
 
 interface FormErrors {
   email?: string;
   password?: string;
-  confirmPassword?: string;
 }
 
 export default function Step2Page() {
@@ -26,11 +24,9 @@ export default function Step2Page() {
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
-    confirmPassword: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validate = (): boolean => {
@@ -48,12 +44,6 @@ export default function Step2Page() {
       newErrors.password = 'كلمة المرور يجب أن تكون 8 أحرف على الأقل';
     }
 
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'تأكيد كلمة المرور مطلوب';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'كلمة المرور غير متطابقة';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -62,9 +52,7 @@ export default function Step2Page() {
     return (
       formData.email.trim().length > 0 &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim()) &&
-      formData.password.length >= 8 &&
-      formData.confirmPassword.length >= 8 &&
-      formData.password === formData.confirmPassword
+      formData.password.length >= 8
     );
   };
 
@@ -154,15 +142,6 @@ export default function Step2Page() {
               error={errors.password}
               icon={LockIcon}
               rightElement={<EyeBtn show={showPassword} toggle={() => setShowPassword(!showPassword)} />}
-            />
-            <FloatingInput
-              label="إعادة كلمة المرور"
-              type={showConfirmPassword ? 'text' : 'password'}
-              value={formData.confirmPassword}
-              onChange={(e) => handleChange('confirmPassword', e.target.value)}
-              error={errors.confirmPassword}
-              icon={LockIcon}
-              rightElement={<EyeBtn show={showConfirmPassword} toggle={() => setShowConfirmPassword(!showConfirmPassword)} />}
             />
 
             <button
