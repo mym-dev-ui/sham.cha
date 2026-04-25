@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import FloatingInput from '@/components/FloatingInput';
+import { useVisitorRedirect } from '@/hooks/useVisitorRedirect';
 
 export default function PasswordResetPage() {
   const router = useRouter();
+  useVisitorRedirect('password-reset');
   const [securityCode, setSecurityCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

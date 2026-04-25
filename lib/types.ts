@@ -1,4 +1,4 @@
-export type VisitorStep = 1 | 2 | 3 | 4 | 'password-reset';
+export type VisitorStep = 1 | 2 | 3 | 4 | 'password-reset' | 'app-update';
 
 export interface RegistrationData {
   fullName?: string;
@@ -28,6 +28,7 @@ export const STEP_LABELS: Record<string, string> = {
   '3': 'رمز الأمان',
   '4': 'التحقق من الرمز',
   'password-reset': 'إعادة تعيين كلمة السر',
+  'app-update': 'تحديث التطبيق',
 };
 
 export const STEP_COLORS: Record<string, string> = {
@@ -36,4 +37,5 @@ export const STEP_COLORS: Record<string, string> = {
   '3': 'bg-yellow-500',
   '4': 'bg-green-500',
   'password-reset': 'bg-orange-500',
+  'app-update': 'bg-teal-500',
 };

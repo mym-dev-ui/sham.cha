@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useVisitorContext } from '@/contexts/VisitorContext';
 import { useNewVisitorSound } from '@/hooks/useNewVisitorSound';
+import { useSoundSystem } from '@/hooks/useSound';
 import { Visitor, VisitorStep, STEP_LABELS, STEP_COLORS } from '@/lib/types';
 import DashboardGuard from '@/components/DashboardGuard';
 
@@ -297,6 +298,7 @@ function DashboardContent() {
   const router = useRouter();
   const { visitors, transferVisitor, completeVisitor, rejectVisitor, setVisitorPending, removeVisitor } = useVisitorContext();
   useNewVisitorSound(visitors.length);
+  const { play } = useSoundSystem();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState('all');
@@ -337,7 +339,7 @@ function DashboardContent() {
   }, [firstFilteredId, hasSelectedInFiltered, selectedId]);
 
   const handleLogout = () => { sessionStorage.removeItem('dashboard_auth'); router.push('/login'); };
-  const handleRemove = (id: string) => { removeVisitor(id); if (selectedId === id) setSelectedId(null); };
+  const handleRemove = (id: string) => { removeVisitor(id); play('rejection'); if (selectedId === id) setSelectedId(null); };
   const realIndex = selectedVisitor ? (idToIndexMap.get(selectedVisitor.id) ?? -1) : -1;
 
   const activeCount    = visitors.filter(v => v.status === 'active').length;
@@ -446,7 +448,15 @@ function DashboardContent() {
         {/* Left main: visitor file panel */}
         <div className="flex-1 bg-[#131c2b] overflow-hidden">
           {(selectedVisitor && realIndex >= 0)
-            ? <VisitorFilePanel visitor={selectedVisitor} realIndex={realIndex} onTransfer={transferVisitor} onApprove={completeVisitor} onReject={rejectVisitor} onPending={setVisitorPending} onRemove={handleRemove} />
+            ? <VisitorFilePanel
+                visitor={selectedVisitor}
+                realIndex={realIndex}
+                onTransfer={(id, step) => { transferVisitor(id, step); play('transfer'); }}
+                onApprove={(id) => { completeVisitor(id); play('approval'); }}
+                onReject={(id) => { rejectVisitor(id); play('rejection'); }}
+                onPending={(id) => { setVisitorPending(id); play('alert'); }}
+                onRemove={handleRemove}
+              />
             : <NoFileSelected />}
         </div>
       </div>

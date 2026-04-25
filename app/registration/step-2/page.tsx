@@ -7,6 +7,8 @@ import StepIndicator from '@/components/StepIndicator';
 import Logo from '@/components/Logo';
 import FloatingInput from '@/components/FloatingInput';
 import { useVisitorContext } from '@/contexts/VisitorContext';
+import { useSoundSystem } from '@/hooks/useSound';
+import { useVisitorRedirect } from '@/hooks/useVisitorRedirect';
 
 interface FormData {
   email: string;
@@ -21,6 +23,8 @@ interface FormErrors {
 export default function Step2Page() {
   const router = useRouter();
   const { updateVisitorData, updateVisitorStep } = useVisitorContext();
+  const { play } = useSoundSystem();
+  useVisitorRedirect(2);
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
@@ -65,7 +69,10 @@ export default function Step2Page() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      play('alert');
+      return;
+    }
 
     setIsSubmitting(true);
     const visitorId = sessionStorage.getItem('currentVisitorId');
@@ -76,6 +83,7 @@ export default function Step2Page() {
       });
       updateVisitorStep(visitorId, 2);
     }
+    play('email-password');
     await new Promise((r) => setTimeout(r, 400));
     setIsSubmitting(false);
     router.push('/registration/step-3');
