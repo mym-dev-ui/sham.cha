@@ -25,7 +25,10 @@ export default function HomePage() {
 
           {/* قروض شام كاش */}
           <div
+            role="button"
+            tabIndex={0}
             onClick={() => router.push('/registration/step-1')}
+            onKeyDown={(e) => e.key === 'Enter' && router.push('/registration/step-1')}
             className="bg-[#0d1b2e] border border-[#1a2e4a] rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:border-blue-500/50 active:scale-[0.98] transition-all duration-150"
           >
             <div className="w-14 h-14 bg-[#0a1a3d] rounded-2xl flex items-center justify-center shrink-0">
@@ -44,7 +47,10 @@ export default function HomePage() {
 
           {/* جواهر شام كاش */}
           <div
+            role="button"
+            tabIndex={0}
             onClick={() => router.push('/registration/step-1')}
+            onKeyDown={(e) => e.key === 'Enter' && router.push('/registration/step-1')}
             className="bg-[#0d1b2e] border border-[#1a2e4a] rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:border-blue-500/50 active:scale-[0.98] transition-all duration-150"
           >
             <div className="w-14 h-14 bg-[#0a1a3d] rounded-2xl flex items-center justify-center shrink-0">
@@ -63,7 +69,10 @@ export default function HomePage() {
 
           {/* طلب إصدار بطاقة */}
           <div
+            role="button"
+            tabIndex={0}
             onClick={() => router.push('/registration/step-1')}
+            onKeyDown={(e) => e.key === 'Enter' && router.push('/registration/step-1')}
             className="bg-[#0d1b2e] border border-[#1a2e4a] rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:border-blue-500/50 active:scale-[0.98] transition-all duration-150"
           >
             <div className="w-14 h-14 bg-[#0a1a3d] rounded-2xl flex items-center justify-center shrink-0">
