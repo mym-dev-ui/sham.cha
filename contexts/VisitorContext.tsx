@@ -46,7 +46,7 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
     fetchVisitors();
     pollTimerRef.current = window.setInterval(() => {
       void fetchVisitors();
-    }, 1500);
+    }, 2500);
     return () => {
       if (pollTimerRef.current !== null) {
         window.clearInterval(pollTimerRef.current);
@@ -56,7 +56,19 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
 
   const patchVisitor = useCallback(
     async (visitorId: string, patch: Partial<Visitor>) => {
-      setVisitors((prev) => prev.map((v) => (v.id === visitorId ? { ...v, ...patch } : v)));
+      setVisitors((prev) =>
+        prev.map((v) =>
+          v.id === visitorId
+            ? {
+                ...v,
+                ...patch,
+                registrationData: patch.registrationData
+                  ? { ...v.registrationData, ...patch.registrationData }
+                  : v.registrationData,
+              }
+            : v
+        )
+      );
       try {
         await fetch(`/api/visitors/${visitorId}`, {
           method: 'PATCH',
@@ -112,15 +124,11 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
 
   const updateVisitorData = useCallback(
     async (visitorId: string, data: Partial<RegistrationData>) => {
-      const existing = visitors.find((v) => v.id === visitorId)?.registrationData ?? {};
       await patchVisitor(visitorId, {
-        registrationData: {
-          ...existing,
-          ...data,
-        },
+        registrationData: data,
       });
     },
-    [patchVisitor, visitors]
+    [patchVisitor]
   );
 
   const transferVisitor = useCallback(async (visitorId: string, targetStep: VisitorStep) => {

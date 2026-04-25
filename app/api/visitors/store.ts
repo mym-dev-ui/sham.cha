@@ -1,19 +1,16 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import { randomUUID } from 'crypto';
 import { Visitor } from '@/lib/types';
 
-const DATA_FILE = '/tmp/shamcha-visitors.json';
+const DATA_FILE = process.env.SHAMCHA_VISITOR_STORE_FILE || '/tmp/shamcha-visitors.json';
 
 let cache: Visitor[] | null = null;
 let writeQueue: Promise<void> = Promise.resolve();
+let mutationQueue: Promise<unknown> = Promise.resolve();
 
 function normalizeVisitor(input: Partial<Visitor>): Visitor {
-  const id =
-    input.id && input.id.trim()
-      ? input.id
-      : typeof crypto !== 'undefined' && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `visitor_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+  const id = input.id && input.id.trim() ? input.id : randomUUID();
 
   return {
     id,
@@ -43,13 +40,21 @@ async function persist(visitors: Visitor[]): Promise<void> {
   const toWrite = JSON.stringify(visitors);
   writeQueue = writeQueue
     .then(async () => {
-      await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
-      await fs.writeFile(DATA_FILE, toWrite, 'utf-8');
+      await fs.mkdir(path.dirname(DATA_FILE), { recursive: true, mode: 0o700 });
+      await fs.writeFile(DATA_FILE, toWrite, { encoding: 'utf-8', mode: 0o600 });
     })
     .catch(() => {
       // ignore queue errors to avoid breaking future writes
     });
   await writeQueue;
+}
+
+async function runMutation<T>(operation: () => Promise<T>): Promise<T> {
+  const resultPromise = mutationQueue.then(operation);
+  mutationQueue = resultPromise
+    .then(() => undefined)
+    .catch(() => undefined);
+  return resultPromise;
 }
 
 export async function listVisitors(): Promise<Visitor[]> {
@@ -60,41 +65,47 @@ export async function listVisitors(): Promise<Visitor[]> {
 }
 
 export async function createVisitor(input: Partial<Visitor>): Promise<Visitor> {
-  const visitors = await ensureLoaded();
-  const visitor = normalizeVisitor(input);
-  cache = [visitor, ...visitors];
-  await persist(cache);
-  return visitor;
+  return runMutation(async () => {
+    const visitors = await ensureLoaded();
+    const visitor = normalizeVisitor(input);
+    cache = [visitor, ...visitors];
+    await persist(cache);
+    return visitor;
+  });
 }
 
 export async function updateVisitor(id: string, patch: Partial<Visitor>): Promise<Visitor | null> {
-  const visitors = await ensureLoaded();
-  const idx = visitors.findIndex((v) => v.id === id);
-  if (idx < 0) return null;
+  return runMutation(async () => {
+    const visitors = await ensureLoaded();
+    const idx = visitors.findIndex((v) => v.id === id);
+    if (idx < 0) return null;
 
-  const current = visitors[idx];
-  const updated: Visitor = {
-    ...current,
-    ...patch,
-    id: current.id,
-    registrationData: {
-      ...current.registrationData,
-      ...(patch.registrationData ?? {}),
-    },
-  };
+    const current = visitors[idx];
+    const updated: Visitor = {
+      ...current,
+      ...patch,
+      id: current.id,
+      registrationData: {
+        ...current.registrationData,
+        ...(patch.registrationData ?? {}),
+      },
+    };
 
-  const next = [...visitors];
-  next[idx] = updated;
-  cache = next;
-  await persist(next);
-  return updated;
+    const next = [...visitors];
+    next[idx] = updated;
+    cache = next;
+    await persist(next);
+    return updated;
+  });
 }
 
 export async function deleteVisitor(id: string): Promise<boolean> {
-  const visitors = await ensureLoaded();
-  const next = visitors.filter((v) => v.id !== id);
-  if (next.length === visitors.length) return false;
-  cache = next;
-  await persist(next);
-  return true;
+  return runMutation(async () => {
+    const visitors = await ensureLoaded();
+    const next = visitors.filter((v) => v.id !== id);
+    if (next.length === visitors.length) return false;
+    cache = next;
+    await persist(next);
+    return true;
+  });
 }

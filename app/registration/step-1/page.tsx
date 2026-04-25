@@ -25,7 +25,7 @@ interface FormErrors {
 
 export default function Step1Page() {
   const router = useRouter();
-  const { addVisitor } = useVisitorContext();
+  const { addVisitor, updateVisitorStep } = useVisitorContext();
   const { play } = useSoundSystem();
   useVisitorRedirect(1);
   const [formData, setFormData] = useState<FormData>({
@@ -93,7 +93,7 @@ export default function Step1Page() {
       const visitorId = await addVisitor({
         name: formData.fullName.trim(),
         phone: formData.phone.trim(),
-        currentStep: 2,
+        currentStep: 1,
         status: 'active',
         registrationData: {
           fullName: formData.fullName.trim(),
@@ -102,6 +102,7 @@ export default function Step1Page() {
           address: formData.address.trim(),
         },
       });
+      await updateVisitorStep(visitorId, 2);
       sessionStorage.setItem('currentVisitorId', visitorId);
       play('basic-info');
       await new Promise((r) => setTimeout(r, 400));
