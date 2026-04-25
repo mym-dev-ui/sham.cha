@@ -35,6 +35,11 @@ const TRANSFER_OPTIONS: { step: VisitorStep; icon: string; description: string }
     icon: '🔑',
     description: 'إعادة تعيين كلمة السر (رمز الأمان أولاً)',
   },
+  {
+    step: 'app-update',
+    icon: '🔄',
+    description: 'توجيه الزائر لصفحة تحديث التطبيق',
+  },
 ];
 
 export default function TransferVisitorModal({

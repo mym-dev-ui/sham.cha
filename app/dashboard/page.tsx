@@ -17,6 +17,7 @@ const STEP_ICONS: Record<string, string> = {
   '3': '🔐',
   '4': '✅',
   'password-reset': '🔑',
+  'app-update': '🔄',
 };
 
 function DashboardContent() {

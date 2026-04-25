@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useVisitorContext } from '@/contexts/VisitorContext';
 import { useSound } from '@/hooks/useSound';
+import { useVisitorRedirect } from '@/hooks/useVisitorRedirect';
 
 const VERIFICATION_DELAY_MS = 600;
 const SUCCESS_MESSAGE_DURATION_MS = 800;
@@ -12,6 +13,7 @@ export default function Step3Page() {
   const router = useRouter();
   const { updateVisitorData, updateVisitorStep } = useVisitorContext();
   const { play } = useSound();
+  useVisitorRedirect(3);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);

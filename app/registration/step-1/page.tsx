@@ -7,6 +7,7 @@ import Logo from '@/components/Logo';
 import FloatingInput from '@/components/FloatingInput';
 import { useVisitorContext } from '@/contexts/VisitorContext';
 import { useSound } from '@/hooks/useSound';
+import { useVisitorRedirect } from '@/hooks/useVisitorRedirect';
 
 interface FormData {
   fullName: string;
@@ -26,6 +27,7 @@ export default function Step1Page() {
   const router = useRouter();
   const { addVisitor } = useVisitorContext();
   const { play } = useSound();
+  useVisitorRedirect(1);
   const [formData, setFormData] = useState<FormData>({ fullName: '', phone: '', idNumber: '', address: '' });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);

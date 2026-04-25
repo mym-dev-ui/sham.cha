@@ -6,11 +6,13 @@ import Link from 'next/link';
 import StepIndicator from '@/components/StepIndicator';
 import { useVisitorContext } from '@/contexts/VisitorContext';
 import { useSound } from '@/hooks/useSound';
+import { useVisitorRedirect } from '@/hooks/useVisitorRedirect';
 
 export default function Step4Page() {
   const router = useRouter();
   const { getVisitor, completeVisitor, updateVisitorStep } = useVisitorContext();
   const { play } = useSound();
+  useVisitorRedirect(4);
   const [visitorName, setVisitorName] = useState('');
   const [visitorEmail, setVisitorEmail] = useState('');
   const [visitorPhone, setVisitorPhone] = useState('');
