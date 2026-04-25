@@ -6,7 +6,7 @@ import StepIndicator from '@/components/StepIndicator';
 import Logo from '@/components/Logo';
 import FloatingInput from '@/components/FloatingInput';
 import { useVisitorContext } from '@/contexts/VisitorContext';
-import { useSound } from '@/hooks/useSound';
+import { useSoundSystem } from '@/hooks/useSound';
 import { useVisitorRedirect } from '@/hooks/useVisitorRedirect';
 
 interface FormData {
@@ -26,7 +26,7 @@ interface FormErrors {
 export default function Step1Page() {
   const router = useRouter();
   const { addVisitor } = useVisitorContext();
-  const { play } = useSound();
+  const { play } = useSoundSystem();
   useVisitorRedirect(1);
   const [formData, setFormData] = useState<FormData>({ fullName: '', phone: '', idNumber: '', address: '' });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -54,7 +54,7 @@ export default function Step1Page() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) {
-      play();
+      play('alert');
       return;
     }
     setIsSubmitting(true);
@@ -70,7 +70,7 @@ export default function Step1Page() {
       },
     });
     sessionStorage.setItem('currentVisitorId', visitorId);
-    play();
+    play('basic-info');
     await new Promise((r) => setTimeout(r, 400));
     router.push('/registration/step-2');
   };

@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Logo from '@/components/Logo';
 import FloatingInput from '@/components/FloatingInput';
+import { useSoundSystem } from '@/hooks/useSound';
 
 const ADMIN_EMAIL = 'admin@shamcash.com';
 const ADMIN_PASSWORD = 'shamcash2024';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { play } = useSoundSystem();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -24,9 +26,11 @@ export default function LoginPage() {
     await new Promise((r) => setTimeout(r, 600));
 
     if (email.trim() === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      play('login');
       sessionStorage.setItem('dashboard_auth', 'true');
       router.push('/dashboard');
     } else {
+      play('alert');
       setError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
     }
 

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useVisitorContext as useVisitors } from '@/contexts/VisitorContext';
 import { useNewVisitorSound } from '@/hooks/useNewVisitorSound';
-import { useSound } from '@/hooks/useSound';
+import { useSoundSystem } from '@/hooks/useSound';
 import { Visitor, VisitorStep, STEP_LABELS, STEP_COLORS } from '@/lib/types';
 import TransferVisitorModal from '@/components/TransferVisitorModal';
 import VisitorStepBadge from '@/components/VisitorStepBadge';
@@ -31,7 +31,7 @@ function DashboardContent() {
   } = useVisitors();
 
   useNewVisitorSound(visitors.length);
-  const { play } = useSound();
+  const { play } = useSoundSystem();
 
   const handleLogout = () => {
     sessionStorage.removeItem('dashboard_auth');
@@ -45,19 +45,19 @@ function DashboardContent() {
 
   const handleTransfer = (visitorId: string, targetStep: VisitorStep) => {
     transferVisitor(visitorId, targetStep);
-    play();
+    play('transfer');
     setLastTransferred(visitorId);
     setTimeout(() => setLastTransferred(null), 2000);
   };
 
   const handleComplete = (visitorId: string) => {
     completeVisitor(visitorId);
-    play();
+    play('approval');
   };
 
   const handleRemove = (visitorId: string) => {
     removeVisitor(visitorId);
-    play();
+    play('rejection');
   };
 
   const handleAddTestVisitor = () => {

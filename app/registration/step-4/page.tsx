@@ -5,13 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import StepIndicator from '@/components/StepIndicator';
 import { useVisitorContext } from '@/contexts/VisitorContext';
-import { useSound } from '@/hooks/useSound';
+import { useSoundSystem } from '@/hooks/useSound';
 import { useVisitorRedirect } from '@/hooks/useVisitorRedirect';
 
 export default function Step4Page() {
   const router = useRouter();
   const { getVisitor, completeVisitor, updateVisitorStep } = useVisitorContext();
-  const { play } = useSound();
+  const { play } = useSoundSystem();
   useVisitorRedirect(4);
   const [visitorName, setVisitorName] = useState('');
   const [visitorEmail, setVisitorEmail] = useState('');
@@ -48,7 +48,7 @@ export default function Step4Page() {
 
     if (verificationCode.trim() !== MOCK_VERIFICATION_CODE) {
       setError(`رمز التحقق غير صحيح. الرمز الصحيح هو: ${MOCK_VERIFICATION_CODE}`);
-      play();
+      play('alert');
       return;
     }
 
@@ -64,7 +64,7 @@ export default function Step4Page() {
       sessionStorage.removeItem('currentVisitorId');
     }
 
-    play();
+    play('registration-complete');
     setIsCompleted(true);
   };
 

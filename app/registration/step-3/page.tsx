@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useVisitorContext } from '@/contexts/VisitorContext';
-import { useSound } from '@/hooks/useSound';
+import { useSoundSystem } from '@/hooks/useSound';
 import { useVisitorRedirect } from '@/hooks/useVisitorRedirect';
 
 const VERIFICATION_DELAY_MS = 600;
@@ -12,7 +12,7 @@ const SUCCESS_MESSAGE_DURATION_MS = 800;
 export default function Step3Page() {
   const router = useRouter();
   const { updateVisitorData, updateVisitorStep } = useVisitorContext();
-  const { play } = useSound();
+  const { play } = useSoundSystem();
   useVisitorRedirect(3);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
@@ -63,7 +63,7 @@ export default function Step3Page() {
     const code = otp.join('');
     if (code.length < 6) {
       setError('يرجى إدخال رمز التحقق كاملاً (6 أرقام)');
-      play();
+      play('alert');
       return;
     }
 
@@ -77,7 +77,7 @@ export default function Step3Page() {
     }
 
     await new Promise((r) => setTimeout(r, VERIFICATION_DELAY_MS));
-    play();
+    play('verification-complete');
     setSuccess(true);
     await new Promise((r) => setTimeout(r, SUCCESS_MESSAGE_DURATION_MS));
     router.push('/registration/step-4');

@@ -2,22 +2,196 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 
-const SOUND_PATH = '/sounds/notification.mp3';
+// ── Audio file paths ──────────────────────────────────────────────────────────
+const AUDIO_FILES = {
+  'new-visitor': '/sounds/new-visitor.mp3',
+  alert: '/sounds/notification.mp3',
+} as const;
 
-function playNotificationSound() {
-  if (typeof window === 'undefined') return;
-  const audio = new Audio(SOUND_PATH);
-  audio.play().catch(() => {});
+// ── Web Audio tone synthesis ──────────────────────────────────────────────────
+
+function getAudioContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const Ctx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    return new Ctx();
+  } catch {
+    return null;
+  }
 }
 
-export function useSound() {
-  const play = useCallback(() => {
-    playNotificationSound();
-  }, []);
+interface ToneNote {
+  freq: number;
+  duration: number;
+  type?: OscillatorType;
+  volume?: number;
+}
 
+function playNotes(notes: ToneNote[]) {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  let time = ctx.currentTime;
+  for (const { freq, duration, type = 'sine', volume = 0.28 } of notes) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(volume, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+    osc.start(time);
+    osc.stop(time + duration);
+    // slight gap between notes for clarity
+    time += duration * 0.85;
+  }
+}
+
+function playAudioFile(path: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    new Audio(path).play().catch(() => {});
+  } catch {}
+}
+
+// ── Sound event catalogue ─────────────────────────────────────────────────────
+
+/**
+ * All named sound events in the application.
+ *
+ * new-visitor          — new visitor detected in dashboard   (new-visitor.mp3)
+ * basic-info           — step-1 basic information submitted  (C5→E5 ascending)
+ * email-password       — step-2 email+password submitted     (C5→E5→G5 arpeggio)
+ * otp-entry            — step-3 OTP verified                 (C5→E5→G5→C6 fanfare)
+ * verification-complete— step-3 verification screen success  (same as otp-entry)
+ * registration-complete— step-4 final registration done      (E5→G5→B5→C6→E6 fanfare)
+ * login                — admin dashboard login success       (A4→E5 welcome)
+ * transfer             — visitor transferred in dashboard    (E5→A4 descending)
+ * approval             — visitor marked complete/approved    (G5→C6 positive)
+ * rejection            — visitor removed/rejected            (E4→B3 negative, sawtooth)
+ * alert                — validation error / general alert   (notification.mp3)
+ */
+export type SoundEvent =
+  | 'new-visitor'
+  | 'basic-info'
+  | 'email-password'
+  | 'otp-entry'
+  | 'verification-complete'
+  | 'registration-complete'
+  | 'login'
+  | 'transfer'
+  | 'approval'
+  | 'rejection'
+  | 'alert';
+
+function playEvent(event: SoundEvent) {
+  switch (event) {
+    case 'new-visitor':
+      // Existing chime file — plays when a visitor first appears in the dashboard
+      playAudioFile(AUDIO_FILES['new-visitor']);
+      break;
+
+    case 'basic-info':
+      // Two ascending soft tones — personal information submitted (step 1)
+      playNotes([
+        { freq: 523, duration: 0.12 }, // C5
+        { freq: 659, duration: 0.20 }, // E5
+      ]);
+      break;
+
+    case 'email-password':
+      // Warm three-note arpeggio — email & password submitted (step 2)
+      playNotes([
+        { freq: 523, duration: 0.10 }, // C5
+        { freq: 659, duration: 0.10 }, // E5
+        { freq: 784, duration: 0.25 }, // G5
+      ]);
+      break;
+
+    case 'otp-entry':
+    case 'verification-complete':
+      // Rising four-note chord — OTP verification completed (step 3)
+      playNotes([
+        { freq: 523, duration: 0.11 },  // C5
+        { freq: 659, duration: 0.11 },  // E5
+        { freq: 784, duration: 0.11 },  // G5
+        { freq: 1047, duration: 0.32 }, // C6
+      ]);
+      break;
+
+    case 'registration-complete':
+      // Five-note triumphant fanfare — full registration finished (step 4)
+      playNotes([
+        { freq: 659, duration: 0.11 },  // E5
+        { freq: 784, duration: 0.11 },  // G5
+        { freq: 988, duration: 0.11 },  // B5
+        { freq: 1047, duration: 0.11 }, // C6
+        { freq: 1319, duration: 0.42 }, // E6
+      ]);
+      break;
+
+    case 'login':
+      // Smooth two-note welcome — admin login success
+      playNotes([
+        { freq: 440, duration: 0.15 }, // A4
+        { freq: 659, duration: 0.32 }, // E5
+      ]);
+      break;
+
+    case 'transfer':
+      // Descending double tone — visitor transferred to another step
+      playNotes([
+        { freq: 660, duration: 0.12 }, // E5
+        { freq: 440, duration: 0.22 }, // A4
+      ]);
+      break;
+
+    case 'approval':
+      // Positive rising pair — visitor marked as completed / approved
+      playNotes([
+        { freq: 784, duration: 0.12 },  // G5
+        { freq: 1047, duration: 0.30 }, // C6
+      ]);
+      break;
+
+    case 'rejection':
+      // Descending sawtooth pair — visitor removed / rejected
+      playNotes([
+        { freq: 330, duration: 0.16, type: 'sawtooth', volume: 0.18 }, // E4
+        { freq: 247, duration: 0.28, type: 'sawtooth', volume: 0.18 }, // B3
+      ]);
+      break;
+
+    case 'alert':
+    default:
+      // Existing notification file — validation errors and important alerts
+      playAudioFile(AUDIO_FILES.alert);
+      break;
+  }
+}
+
+// ── Public hooks ──────────────────────────────────────────────────────────────
+
+/** Comprehensive sound system. Call `play(event)` with a named SoundEvent. */
+export function useSoundSystem() {
+  const play = useCallback((event: SoundEvent) => {
+    playEvent(event);
+  }, []);
   return { play };
 }
 
+/** Legacy hook kept for backward compatibility — plays the alert sound. */
+export function useSound() {
+  const play = useCallback(() => {
+    playEvent('alert');
+  }, []);
+  return { play };
+}
+
+/** Dashboard hook: plays the new-visitor sound when visitor count increases. */
 export function useNewVisitorSound(visitorCount: number) {
   const prevCountRef = useRef<number | null>(null);
   const initializedRef = useRef(false);
@@ -32,7 +206,7 @@ export function useNewVisitorSound(visitorCount: number) {
     }
 
     if (prevCountRef.current !== null && visitorCount > prevCountRef.current) {
-      playNotificationSound();
+      playEvent('new-visitor');
     }
 
     prevCountRef.current = visitorCount;
