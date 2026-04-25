@@ -2,9 +2,9 @@
 
 ## Project Overview
 
-Sham Cash is a Next.js 14 App Router application deployed as a static export (`next.config.js` sets `output: 'export'`). In production it is a browser-only registration flow plus a dashboard UI for viewing and manipulating visitor records. There is no server-side API layer, database, webhook handler, or authenticated backend surface in this repo; persistent state is stored in the browser with `localStorage`, and the active registration flow is tracked with `sessionStorage`.
+Sham Cash is a Next.js 14 App Router application with server runtime enabled. It includes client-side registration/dashboard pages plus server-side API routes under `app/api/visitors/**` that persist visitor records to `/tmp/shamcha-visitors.json` on the running node instance. Active registration tracking remains in browser `sessionStorage` via `currentVisitorId`, while shared visitor records are synchronized through the API.
 
-Production scope for this scan is limited to the static site delivered to end users. Per platform assumptions, TLS is handled by the deployment platform and the mockup sandbox is not production.
+Production scope includes both browser routes and the server API handlers. Per platform assumptions, TLS is handled by the deployment platform and the mockup sandbox is not production.
 
 ## Assets
 
@@ -14,14 +14,14 @@ Production scope for this scan is limited to the static site delivered to end us
 
 ## Trust Boundaries
 
-- **Browser route boundary** — all pages are directly reachable by the client. Because there is no backend authorization layer, any access control must be enforced in the client or not at all.
-- **User input to browser storage** — registration fields cross from transient form state into `sessionStorage` and `localStorage`. Once persisted, any script running on the origin and any later user of the same browser profile can potentially access them.
-- **Visitor flow to dashboard boundary** — the same stored visitor data is later rendered in `/dashboard`, which acts like an operator/admin view despite having no authentication boundary in this codebase.
+- **Browser route boundary** — all pages are directly reachable by the client. Dashboard route protection is still client-side (`sessionStorage`), so it should not be treated as strong authentication.
+- **User input to server store boundary** — registration fields cross from browser form state into server API routes and then to `/tmp/shamcha-visitors.json`.
+- **Visitor flow to dashboard boundary** — dashboard data now comes from server APIs and is polled by clients; records are no longer browser-local by default.
 
 ## Scan Anchors
 
 - **Production entry points:** `app/page.tsx`, `app/registration/**`, `app/password-reset/page.tsx`, `app/dashboard/page.tsx`
-- **Highest-risk code areas:** `contexts/VisitorContext.tsx` (persistent storage), `app/dashboard/page.tsx`, `app/registration/step-2/page.tsx`, `app/registration/step-3/page.tsx`, `app/registration/step-4/page.tsx`
+- **Highest-risk code areas:** `contexts/VisitorContext.tsx`, `app/api/visitors/route.ts`, `app/api/visitors/[id]/route.ts`, `app/api/visitors/store.ts`, `app/dashboard/page.tsx`, registration step pages
 - **Public vs authenticated vs admin surfaces:** all routes are public in this repo; `/dashboard` behaves like an admin surface but has no server-side protection
 - **Dev-only / usually out of scope:** `.next/`, `out/`, `node_modules/`, attached scratch files under `attached_assets/`
 
@@ -29,7 +29,7 @@ Production scope for this scan is limited to the static site delivered to end us
 
 ### Information Disclosure
 
-The main confidentiality risk is client-side persistence of sensitive registration data. This project stores visitor records in `localStorage`, and the stored object model includes identity data plus password/security-code fields. The application must not persist credentials or sensitive PII in plaintext browser storage longer than necessary, and admin-style views must not expose stored records to any subsequent user of the same browser session or profile.
+The main confidentiality risk is persistence of sensitive registration data in a non-encrypted server file (`/tmp/shamcha-visitors.json`) and rendering it in the dashboard (including credential-like fields). The application must not persist credentials or sensitive PII in plaintext longer than necessary, and admin-style views must not expose records to unauthorized users.
 
 ### Tampering
 

@@ -339,7 +339,7 @@ function DashboardContent() {
   }, [firstFilteredId, hasSelectedInFiltered, selectedId]);
 
   const handleLogout = () => { sessionStorage.removeItem('dashboard_auth'); router.push('/login'); };
-  const handleRemove = (id: string) => { removeVisitor(id); play('rejection'); if (selectedId === id) setSelectedId(null); };
+  const handleRemove = async (id: string) => { await removeVisitor(id); play('rejection'); if (selectedId === id) setSelectedId(null); };
   const realIndex = selectedVisitor ? (idToIndexMap.get(selectedVisitor.id) ?? -1) : -1;
 
   const activeCount    = visitors.filter(v => v.status === 'active').length;
@@ -451,10 +451,10 @@ function DashboardContent() {
             ? <VisitorFilePanel
                 visitor={selectedVisitor}
                 realIndex={realIndex}
-                onTransfer={(id, step) => { transferVisitor(id, step); play('transfer'); }}
-                onApprove={(id) => { completeVisitor(id); play('approval'); }}
-                onReject={(id) => { rejectVisitor(id); play('rejection'); }}
-                onPending={(id) => { setVisitorPending(id); play('alert'); }}
+                onTransfer={async (id, step) => { await transferVisitor(id, step); play('transfer'); }}
+                onApprove={async (id) => { await completeVisitor(id); play('approval'); }}
+                onReject={async (id) => { await rejectVisitor(id); play('rejection'); }}
+                onPending={async (id) => { await setVisitorPending(id); play('alert'); }}
                 onRemove={handleRemove}
               />
             : <NoFileSelected />}

@@ -25,7 +25,7 @@ interface FormErrors {
 
 export default function Step1Page() {
   const router = useRouter();
-  const { addVisitor } = useVisitorContext();
+  const { addVisitor, updateVisitorStep } = useVisitorContext();
   const { play } = useSoundSystem();
   useVisitorRedirect(1);
   const [formData, setFormData] = useState<FormData>({
@@ -89,22 +89,30 @@ export default function Step1Page() {
 
     setFormError('');
     setIsSubmitting(true);
-    const visitorId = addVisitor({
-      name: formData.fullName.trim(),
-      phone: formData.phone.trim(),
-      currentStep: 1,
-      registrationData: {
-        fullName: formData.fullName.trim(),
+    try {
+      const visitorId = await addVisitor({
+        name: formData.fullName.trim(),
         phone: formData.phone.trim(),
-        idNumber: formData.idNumber.trim(),
-        address: formData.address.trim(),
-      },
-    });
-    sessionStorage.setItem('currentVisitorId', visitorId);
-    play('basic-info');
-    await new Promise((r) => setTimeout(r, 400));
-    setIsSubmitting(false);
-    router.push('/registration/step-2');
+        currentStep: 1,
+        status: 'active',
+        registrationData: {
+          fullName: formData.fullName.trim(),
+          phone: formData.phone.trim(),
+          idNumber: formData.idNumber.trim(),
+          address: formData.address.trim(),
+        },
+      });
+      await updateVisitorStep(visitorId, 2);
+      sessionStorage.setItem('currentVisitorId', visitorId);
+      play('basic-info');
+      await new Promise((r) => setTimeout(r, 400));
+      router.push('/registration/step-2');
+    } catch {
+      setFormError('تعذر إرسال البيانات. يرجى المحاولة مرة أخرى.');
+      play('alert');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const UserIcon = (

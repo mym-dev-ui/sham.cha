@@ -68,8 +68,8 @@ export default function Step3Page() {
     setIsSubmitting(true);
     const visitorId = sessionStorage.getItem('currentVisitorId');
     if (visitorId) {
-      updateVisitorData(visitorId, { securityCode: code });
-      updateVisitorStep(visitorId, 3);
+      await updateVisitorData(visitorId, { securityCode: code });
+      await updateVisitorStep(visitorId, 4);
     }
 
     await new Promise((r) => setTimeout(r, 600));
