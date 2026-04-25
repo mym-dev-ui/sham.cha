@@ -35,7 +35,7 @@ const TOTAL_STEPS = 4;
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleString('ar-SA', { dateStyle: 'short', timeStyle: 'short' });
 }
-function caseNum(index: number) {
+function formatCaseNumber(index: number) {
   return '#' + String(index + 1).padStart(4, '0');
 }
 
@@ -49,7 +49,7 @@ function CaseRow({ visitor, realIndex, isSelected, onClick }: { visitor: Visitor
       <div className="pt-1.5 shrink-0"><div className={`w-2 h-2 rounded-full ${st.dot}`} /></div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[#4a5568] text-[10px] font-mono shrink-0">{caseNum(realIndex)}</span>
+          <span className="text-[#4a5568] text-[10px] font-mono shrink-0">{formatCaseNumber(realIndex)}</span>
           <span className="text-white font-semibold text-sm truncate">{visitor.name}</span>
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -149,7 +149,7 @@ function VisitorFilePanel({ visitor, realIndex, onTransfer, onApprove, onReject,
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
               <h2 className="text-white font-bold text-xl leading-tight">{visitor.name}</h2>
-              <span className="text-[#4a5568] text-sm font-mono">{caseNum(realIndex)}</span>
+              <span className="text-[#4a5568] text-sm font-mono">{formatCaseNumber(realIndex)}</span>
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${st.badge} ${st.text}`}>{st.label}</span>
             </div>
             <p className="text-[#a0aec0] text-sm mt-0.5 font-mono">{visitor.phone}</p>
@@ -212,7 +212,7 @@ function VisitorFilePanel({ visitor, realIndex, onTransfer, onApprove, onReject,
               </div>
               <div className="bg-[#1e2d3d] rounded-xl p-3.5 border border-[#2d3a4f]">
                 <p className="text-[#4a5568] text-[10px] font-semibold uppercase tracking-wider mb-1.5">{'\u0631\u0642\u0645 \u0627\u0644\u0645\u0644\u0641'}</p>
-                <p className="text-white font-mono text-lg font-bold">{caseNum(realIndex)}</p>
+                <p className="text-white font-mono text-lg font-bold">{formatCaseNumber(realIndex)}</p>
               </div>
             </div>
           </section>
@@ -303,6 +303,10 @@ function DashboardContent() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const normalizedSearch = searchQuery.trim().toLowerCase();
+  const idToIndexMap = useMemo(
+    () => new Map(visitors.map((v, i) => [v.id, i])),
+    [visitors]
+  );
   const statusFilteredVisitors = useMemo(
     () => (filterStatus === 'all' ? visitors : visitors.filter(v => v.status === filterStatus)),
     [visitors, filterStatus]
@@ -310,15 +314,15 @@ function DashboardContent() {
   const filteredVisitors = useMemo(
     () => normalizedSearch
       ? statusFilteredVisitors.filter(v => {
-          const ri = visitors.findIndex(x => x.id === v.id);
-          const searchable = [v.name, v.phone, v.email, v.registrationData.email, caseNum(ri)]
+          const ri = idToIndexMap.get(v.id) ?? -1;
+          const searchable = [v.name, v.phone, v.email, v.registrationData.email, ri >= 0 ? formatCaseNumber(ri) : '']
             .filter(Boolean)
             .join(' ')
             .toLowerCase();
           return searchable.includes(normalizedSearch);
         })
       : statusFilteredVisitors,
-    [statusFilteredVisitors, normalizedSearch, visitors]
+    [statusFilteredVisitors, normalizedSearch, idToIndexMap]
   );
   const selectedVisitor = visitors.find(v => v.id === selectedId) ?? null;
   const firstFilteredId = filteredVisitors[0]?.id ?? null;
@@ -334,7 +338,7 @@ function DashboardContent() {
 
   const handleLogout = () => { sessionStorage.removeItem('dashboard_auth'); router.push('/login'); };
   const handleRemove = (id: string) => { removeVisitor(id); if (selectedId === id) setSelectedId(null); };
-  const realIndex = selectedVisitor ? visitors.findIndex(v => v.id === selectedVisitor.id) : -1;
+  const realIndex = selectedVisitor ? (idToIndexMap.get(selectedVisitor.id) ?? -1) : -1;
 
   const activeCount    = visitors.filter(v => v.status === 'active').length;
   const pendingCount   = visitors.filter(v => v.status === 'pending').length;
@@ -432,7 +436,7 @@ function DashboardContent() {
               </div>
             ) : (
               filteredVisitors.map(v => {
-                const ri = visitors.findIndex(x => x.id === v.id);
+                const ri = idToIndexMap.get(v.id) ?? -1;
                 return (<CaseRow key={v.id} visitor={v} realIndex={ri} isSelected={selectedId === v.id} onClick={() => setSelectedId(v.id)} />);
               })
             )}
