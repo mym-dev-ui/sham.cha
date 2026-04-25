@@ -41,6 +41,7 @@ function CaseRow({ visitor, realIndex, isSelected, onClick }: { visitor: Visitor
   const st = STATUS_CFG[visitor.status] ?? STATUS_CFG.active;
   const stepNum = typeof visitor.currentStep === 'number' ? visitor.currentStep : null;
   const stepColor = STEP_COLORS[String(visitor.currentStep)] ?? 'bg-gray-500';
+  const stepLabel = STEP_LABELS[String(visitor.currentStep)] ?? String(visitor.currentStep);
   return (
     <button onClick={onClick} className={['w-full text-right px-4 py-3.5 border-b border-[#2d3a4f] transition-all duration-150 flex items-start gap-3', isSelected ? 'bg-[#4A7FFF]/10 border-l-2 border-l-[#4A7FFF]' : 'hover:bg-[#2d3a4f]/40'].join(' ')}>
       <div className="pt-1.5 shrink-0"><div className={`w-2 h-2 rounded-full ${st.dot}`} /></div>
@@ -51,7 +52,9 @@ function CaseRow({ visitor, realIndex, isSelected, onClick }: { visitor: Visitor
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-[#6b7a8f] text-xs">{visitor.phone}</span>
-          {stepNum !== null && (<span className={`text-[10px] px-1.5 py-0.5 rounded text-white font-medium ${stepColor}`}>{'\u062e'}{stepNum}</span>)}
+          {stepNum !== null
+            ? <span className={`text-[10px] px-1.5 py-0.5 rounded text-white font-medium ${stepColor}`}>{'\u062e'}{stepNum}</span>
+            : <span className={`text-[10px] px-1.5 py-0.5 rounded text-white font-medium ${stepColor}`}>{stepLabel}</span>}
           <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${st.badge} ${st.text}`}>{st.label}</span>
         </div>
         <p className="text-[#3a4a5f] text-[10px] mt-1 font-mono">{fmtDate(visitor.createdAt)}</p>
@@ -129,6 +132,8 @@ function VisitorFilePanel({ visitor, realIndex, onTransfer, onApprove, onReject,
   const rd = visitor.registrationData;
   const stepColor = STEP_COLORS[String(visitor.currentStep)] ?? 'bg-gray-500';
   const stepNum = typeof visitor.currentStep === 'number' ? visitor.currentStep : 0;
+  const stepLabel = STEP_LABELS[String(visitor.currentStep)] ?? String(visitor.currentStep);
+  const isNumericStep = typeof visitor.currentStep === 'number';
   const isCompleted = visitor.status === 'completed';
   const isRejected = visitor.status === 'rejected';
   const isClosed = isCompleted || isRejected;
@@ -152,10 +157,14 @@ function VisitorFilePanel({ visitor, realIndex, onTransfer, onApprove, onReject,
             </div>
           </div>
           <div className="shrink-0 pt-1">
-            <p className="text-[#4a5568] text-[10px] mb-1.5 text-center">{typeof visitor.currentStep === 'number' ? `${stepNum} / 4` : ''}</p>
-            <div className="flex gap-1">
-              {[1,2,3,4].map(s => (<div key={s} className={`w-8 h-2 rounded-full transition-all duration-300 ${s <= stepNum ? stepColor : 'bg-[#2d3a4f]'}`} />))}
-            </div>
+            <p className="text-[#4a5568] text-[10px] mb-1.5 text-center">{isNumericStep ? `${stepNum} / 4` : stepLabel}</p>
+            {isNumericStep ? (
+              <div className="flex gap-1">
+                {[1,2,3,4].map(s => (<div key={s} className={`w-8 h-2 rounded-full transition-all duration-300 ${s <= stepNum ? stepColor : 'bg-[#2d3a4f]'}`} />))}
+              </div>
+            ) : (
+              <div className={`text-[10px] px-2 py-1 rounded-full text-white font-medium text-center ${stepColor}`}>{stepLabel}</div>
+            )}
           </div>
         </div>
       </div>
@@ -289,8 +298,20 @@ function DashboardContent() {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredVisitors = filterStatus === 'all' ? visitors : visitors.filter(v => v.status === filterStatus);
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const statusFilteredVisitors = filterStatus === 'all' ? visitors : visitors.filter(v => v.status === filterStatus);
+  const filteredVisitors = normalizedSearch
+    ? statusFilteredVisitors.filter(v => {
+        const ri = visitors.findIndex(x => x.id === v.id);
+        const searchable = [v.name, v.phone, v.email, v.registrationData.email, caseNum(ri)]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+        return searchable.includes(normalizedSearch);
+      })
+    : statusFilteredVisitors;
   const selectedVisitor = visitors.find(v => v.id === selectedId) ?? null;
 
   useEffect(() => {
@@ -308,6 +329,7 @@ function DashboardContent() {
   const activeCount    = visitors.filter(v => v.status === 'active').length;
   const pendingCount   = visitors.filter(v => v.status === 'pending').length;
   const completedCount = visitors.filter(v => v.status === 'completed').length;
+  const rejectedCount  = visitors.filter(v => v.status === 'rejected').length;
 
   return (
     <div className="h-screen flex flex-col bg-[#1a2332] overflow-hidden" dir="rtl">
@@ -328,6 +350,7 @@ function DashboardContent() {
               {activeCount > 0 && (<span className="bg-blue-500/15 border border-blue-500/30 px-2.5 py-1 rounded-lg text-blue-400 text-xs">{activeCount} {'\u0646\u0634\u0637'}</span>)}
               {pendingCount > 0 && (<span className="bg-yellow-500/15 border border-yellow-500/30 px-2.5 py-1 rounded-lg text-yellow-400 text-xs">{pendingCount} {'\u0627\u0646\u062a\u0638\u0627\u0631'}</span>)}
               {completedCount > 0 && (<span className="bg-green-500/15 border border-green-500/30 px-2.5 py-1 rounded-lg text-green-400 text-xs">{completedCount} {'\u0645\u0643\u062a\u0645\u0644'}</span>)}
+              {rejectedCount > 0 && (<span className="bg-red-500/15 border border-red-500/30 px-2.5 py-1 rounded-lg text-red-400 text-xs">{rejectedCount} {'\u0645\u0631\u0641\u0648\u0636'}</span>)}
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -363,6 +386,15 @@ function DashboardContent() {
                 );
               })}
             </div>
+            <div className="mt-2.5">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setSelectedId(null); }}
+                placeholder="\u0628\u062d\u062b \u0628\u0627\u0644\u0627\u0633\u0645 \u0623\u0648 \u0627\u0644\u0647\u0627\u062a\u0641 \u0623\u0648 \u0631\u0642\u0645 \u0627\u0644\u0645\u0644\u0641"
+                className="w-full bg-[#131c2b] border border-[#2d3a4f] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#4a5568] focus:outline-none focus:border-[#4A7FFF]"
+              />
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto">
             {filteredVisitors.length === 0 ? (
@@ -370,8 +402,23 @@ function DashboardContent() {
                 <div className="w-12 h-12 bg-[#1e2d3d] rounded-xl flex items-center justify-center border border-[#2d3a4f]">
                   <svg className="w-5 h-5 text-[#4a5568]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                 </div>
-                <p className="text-[#4a5568] text-sm">{'\u0644\u0627 \u062a\u0648\u062c\u062f \u0645\u0644\u0641\u0627\u062a'}</p>
-                <p className="text-[#3a4a5f] text-xs">{filterStatus !== 'all' ? '\u062c\u0631\u0628 \u062a\u063a\u064a\u064a\u0631 \u0627\u0644\u0641\u0644\u062a\u0631' : '\u0641\u064a \u0627\u0646\u062a\u0638\u0627\u0631 \u062f\u062e\u0648\u0644 \u0632\u0648\u0627\u0631 \u0645\u0646 \u0627\u0644\u0645\u0648\u0642\u0639'}</p>
+                <p className="text-[#4a5568] text-sm">{'\u0644\u0627 \u062a\u0648\u062c\u062f \u0646\u062a\u0627\u0626\u062c'}</p>
+                <p className="text-[#3a4a5f] text-xs">
+                  {normalizedSearch
+                    ? '\u062c\u0631\u0651\u0628 \u062a\u0639\u062f\u064a\u0644 \u0643\u0644\u0645\u0627\u062a \u0627\u0644\u0628\u062d\u062b'
+                    : filterStatus !== 'all'
+                      ? '\u062c\u0631\u0628 \u062a\u063a\u064a\u064a\u0631 \u0627\u0644\u0641\u0644\u062a\u0631'
+                      : '\u0641\u064a \u0627\u0646\u062a\u0638\u0627\u0631 \u062f\u062e\u0648\u0644 \u0632\u0648\u0627\u0631 \u0645\u0646 \u0627\u0644\u0645\u0648\u0642\u0639'}
+                </p>
+                {(normalizedSearch || filterStatus !== 'all') && (
+                  <button
+                    type="button"
+                    onClick={() => { setSearchQuery(''); setFilterStatus('all'); setSelectedId(null); }}
+                    className="text-xs text-[#4A7FFF] hover:text-[#7ea3ff] transition-colors"
+                  >
+                    {'\u0645\u0633\u062d \u0627\u0644\u0628\u062d\u062b \u0648\u0627\u0644\u0641\u0644\u0627\u062a\u0631'}
+                  </button>
+                )}
               </div>
             ) : (
               filteredVisitors.map(v => {
