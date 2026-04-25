@@ -42,6 +42,14 @@ export function VisitorProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setVisitors(loadFromStorage());
     setInitialized(true);
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) {
+        setVisitors(loadFromStorage());
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   useEffect(() => {

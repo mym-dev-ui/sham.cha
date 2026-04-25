@@ -121,7 +121,7 @@ function DashboardContent() {
 
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
           <div className="md:col-span-1 bg-[#1e2d3d] rounded-2xl p-4 border border-[#2d3a4f] text-center">
             <p className="text-3xl font-bold text-white">{visitors.length}</p>
             <p className="text-[#a0aec0] text-sm mt-1">إجمالي الزوار</p>
@@ -141,6 +141,11 @@ function DashboardContent() {
               }`} />
             </div>
           ))}
+          <div className="bg-[#1e2d3d] rounded-2xl p-4 border border-green-500/30 text-center">
+            <p className="text-2xl font-bold text-green-400">{completedCount}</p>
+            <p className="text-[#a0aec0] text-xs mt-1">مكتمل</p>
+            <span className="inline-block w-2 h-2 rounded-full mt-2 bg-green-500" />
+          </div>
         </div>
 
         {/* Filter Bar */}
@@ -222,6 +227,9 @@ function DashboardContent() {
                         {visitor.name}
                       </h3>
                       <p className="text-[#a0aec0] text-sm">{visitor.phone}</p>
+                      <p className="text-[#4a5568] text-xs">
+                        {new Date(visitor.createdAt).toLocaleString('ar-SA', { dateStyle: 'short', timeStyle: 'short' })}
+                      </p>
                     </div>
                     {isJustTransferred && (
                       <span className="text-green-400 text-xs font-medium animate-pulse">
@@ -271,11 +279,28 @@ function DashboardContent() {
 
                     {/* Registration Data Summary */}
                     {visitor.registrationData.email && (
-                      <div className="flex items-center gap-2 mb-3">
+                      <div className="flex items-center gap-2 mb-2">
                         <svg className="w-4 h-4 text-[#4a5568] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
                         <span className="text-[#a0aec0] text-sm truncate">{visitor.registrationData.email}</span>
+                      </div>
+                    )}
+                    {visitor.registrationData.idNumber && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <svg className="w-4 h-4 text-[#4a5568] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0" />
+                        </svg>
+                        <span className="text-[#a0aec0] text-sm">{visitor.registrationData.idNumber}</span>
+                      </div>
+                    )}
+                    {visitor.registrationData.address && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <svg className="w-4 h-4 text-[#4a5568] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="text-[#a0aec0] text-sm truncate">{visitor.registrationData.address}</span>
                       </div>
                     )}
 
