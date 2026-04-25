@@ -7,8 +7,9 @@ const AUDIO_FILES = {
   'new-visitor': '/sounds/new-visitor.mp3',
   alert: '/sounds/notification.mp3',
 } as const;
-const APPROVAL_PLAYBACK_RATE = 1.12; // slightly faster for positive confirmation feedback
-const REJECTION_PLAYBACK_RATE = 0.88; // slightly slower for negative/rejection feedback
+// Keep shifts subtle (±12%) so the same uploaded notification file conveys outcome tone without distortion.
+const APPROVAL_PLAYBACK_RATE = 1.12; // slightly faster to feel positive/successful
+const REJECTION_PLAYBACK_RATE = 0.88; // slightly slower to feel negative/rejected
 
 // ── Web Audio tone synthesis ──────────────────────────────────────────────────
 
