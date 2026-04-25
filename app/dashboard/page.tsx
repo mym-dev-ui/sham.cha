@@ -167,6 +167,7 @@ function DashboardContent() {
             { value: '3', label: 'الخطوة ٣' },
             { value: '4', label: 'الخطوة ٤' },
             { value: 'password-reset', label: 'إعادة تعيين' },
+            { value: 'app-update', label: '🔄 تحديث التطبيق' },
           ].map((f) => (
             <button
               key={f.value}

@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Logo from '@/components/Logo';
 import { useVisitorRedirect } from '@/hooks/useVisitorRedirect';
 
 const STORAGE_KEY = 'shamcha_visitors';
@@ -27,11 +25,118 @@ function loadVisitorInfo(): VisitorInfo | null {
   }
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+   SVG Icons inlined so the page has zero external deps
+   ────────────────────────────────────────────────────────────────────────── */
+
+function ShamCashLogo() {
+  return (
+    <svg width={36} height={29} viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="au-lt" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#00e8d0" />
+          <stop offset="100%" stopColor="#00b8a8" />
+        </linearGradient>
+        <linearGradient id="au-lb" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#009988" />
+          <stop offset="100%" stopColor="#006655" />
+        </linearGradient>
+        <linearGradient id="au-rt" x1="100%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#4488ff" />
+          <stop offset="100%" stopColor="#2255cc" />
+        </linearGradient>
+        <linearGradient id="au-rb" x1="100%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#1144bb" />
+          <stop offset="100%" stopColor="#002288" />
+        </linearGradient>
+      </defs>
+      <polygon points="8,8 46,8 34,28 8,28" fill="url(#au-lt)" />
+      <polygon points="8,28 34,28 22,52 8,52" fill="url(#au-lb)" opacity="0.9" />
+      <polygon points="8,52 22,52 8,70" fill="url(#au-lb)" opacity="0.7" />
+      <polygon points="54,10 92,10 92,30 66,30" fill="url(#au-rt)" />
+      <polygon points="66,30 92,30 92,52 78,52" fill="url(#au-rb)" opacity="0.9" />
+      <polygon points="54,10 66,30 50,52 38,32" fill="url(#au-rt)" opacity="0.85" />
+      <polygon points="50,52 66,30 78,52 64,72 50,52" fill="url(#au-rb)" opacity="0.8" />
+    </svg>
+  );
+}
+
+/* Blue circular arrow button (matches the left icon in the reference image) */
+function BlueArrowIcon() {
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: 120, height: 120 }}>
+      {/* Outer glow rings */}
+      <div
+        className="absolute inset-0 rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(0,180,255,0.25) 0%, transparent 70%)' }}
+      />
+      {/* Ring border */}
+      <div
+        className="absolute rounded-full border-2"
+        style={{
+          inset: 6,
+          borderColor: 'rgba(0,200,255,0.6)',
+          boxShadow: '0 0 18px rgba(0,200,255,0.5), inset 0 0 10px rgba(0,200,255,0.2)',
+        }}
+      />
+      {/* Inner circle */}
+      <div
+        className="relative rounded-full flex items-center justify-center"
+        style={{
+          width: 76,
+          height: 76,
+          background: 'linear-gradient(135deg, #1a6fff 0%, #0a4aff 100%)',
+          boxShadow: '0 0 24px rgba(26,111,255,0.7)',
+        }}
+      >
+        {/* Right-pointing arrow */}
+        <svg width={36} height={36} viewBox="0 0 24 24" fill="none">
+          <path
+            d="M5 12h14M13 6l6 6-6 6"
+            stroke="white"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+/* Green circular refresh icon (matches the bottom icon in the reference image) */
+function GreenRefreshIcon() {
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: 80, height: 80 }}>
+      <div
+        className="absolute inset-0 rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(0,220,80,0.3) 0%, transparent 70%)' }}
+      />
+      <div
+        className="relative rounded-full flex items-center justify-center"
+        style={{
+          width: 64,
+          height: 64,
+          background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+          boxShadow: '0 0 20px rgba(34,197,94,0.6)',
+        }}
+      >
+        <svg width={32} height={32} viewBox="0 0 24 24" fill="none">
+          <path
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            stroke="white"
+            strokeWidth={2.2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 export default function AppUpdatePage() {
-  const router = useRouter();
   const [visitorInfo, setVisitorInfo] = useState<VisitorInfo | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [isDone, setIsDone] = useState(false);
 
   useVisitorRedirect('app-update');
 
@@ -39,171 +144,135 @@ export default function AppUpdatePage() {
     setVisitorInfo(loadVisitorInfo());
   }, []);
 
-  const handleUpdate = async () => {
-    setIsUpdating(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    setIsUpdating(false);
-    setIsDone(true);
-  };
-
-  if (isDone) {
-    return (
-      <main
-        className="min-h-screen bg-gradient-to-b from-[#020617] to-[#020c2b] text-white flex items-center justify-center px-4"
-        dir="rtl"
-      >
-        <div className="w-full max-w-md text-center">
-          <div className="w-24 h-24 bg-teal-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <div className="w-16 h-16 bg-teal-500 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-          </div>
-          <h1 className="text-2xl font-bold text-white mb-3">تم التحديث بنجاح!</h1>
-          <p className="text-gray-400 text-base mb-8">
-            تم تحديث التطبيق بنجاح. يمكنك الآن المتابعة.
-          </p>
-          <button
-            onClick={() => router.push('/')}
-            className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-4 rounded-2xl transition-colors"
-          >
-            العودة للصفحة الرئيسية
-          </button>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main
-      className="min-h-screen bg-gradient-to-b from-[#020617] to-[#020c2b] text-white flex flex-col items-center px-4 py-8"
+      className="relative min-h-screen overflow-hidden flex flex-col"
       dir="rtl"
+      style={{
+        background: 'linear-gradient(160deg, #04061a 0%, #060c2e 40%, #04061a 100%)',
+      }}
     >
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <Logo size={80} />
-          <h1 className="text-xl font-bold mt-2">SHAM CASH</h1>
-          <p className="text-teal-400 text-sm">نظام إدارة الزوار والمدفوعات</p>
-        </div>
+      {/* ── Glowing ring layers (background decoration) ── */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {/* Left-center rings */}
+        {[300, 240, 180, 130, 85].map((size, i) => (
+          <div
+            key={size}
+            className="absolute rounded-full border"
+            style={{
+              width: size,
+              height: size,
+              left: -size / 3,
+              top: '35%',
+              transform: 'translateY(-50%)',
+              borderColor: `rgba(0,180,220,${0.06 + i * 0.04})`,
+              boxShadow: `0 0 ${8 + i * 4}px rgba(0,180,220,${0.05 + i * 0.03})`,
+            }}
+          />
+        ))}
+        {/* Right-side rings */}
+        {[340, 260, 190].map((size, i) => (
+          <div
+            key={`r-${size}`}
+            className="absolute rounded-full border"
+            style={{
+              width: size,
+              height: size,
+              right: -size / 3,
+              top: '60%',
+              transform: 'translateY(-50%)',
+              borderColor: `rgba(0,140,200,${0.04 + i * 0.03})`,
+            }}
+          />
+        ))}
+        {/* Subtle radial glow center */}
+        <div
+          className="absolute"
+          style={{
+            width: 500,
+            height: 400,
+            left: '50%',
+            top: '45%',
+            transform: 'translate(-50%, -50%)',
+            background: 'radial-gradient(ellipse, rgba(20,60,160,0.18) 0%, transparent 70%)',
+          }}
+        />
+      </div>
 
-        {/* Update Icon */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-20 h-20 bg-teal-500/20 rounded-2xl flex items-center justify-center mb-4">
-            <svg
-              className="w-10 h-10 text-teal-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.8}
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-white">تحديث التطبيق</h2>
-          <p className="text-gray-400 text-sm mt-2 text-center">
-            يرجى إتمام عملية تحديث التطبيق للاستمرار في استخدام الخدمة
-          </p>
-        </div>
-
-        {/* Visitor info */}
-        {visitorInfo && (
-          <div className="bg-[#1e2d3d] border border-[#2d3a4f] rounded-2xl p-4 mb-6 flex items-center gap-3">
-            <div className="w-10 h-10 bg-teal-500/20 rounded-full flex items-center justify-center text-teal-400 font-bold shrink-0">
-              {visitorInfo.name.charAt(0)}
-            </div>
-            <div>
-              <p className="text-white font-semibold">{visitorInfo.name}</p>
-              <p className="text-gray-400 text-sm">{visitorInfo.phone}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Info Card */}
-        <div className="bg-[#1e2d3d] border border-[#2d3a4f] rounded-2xl p-6 mb-6">
-          <h3 className="text-white font-bold text-lg mb-4">ما الجديد في هذا التحديث؟</h3>
-          <ul className="space-y-3">
-            {[
-              'تحسين الأداء وسرعة التطبيق',
-              'إصلاح بعض المشكلات التقنية',
-              'تحسينات على واجهة المستخدم',
-              'تعزيز أمان البيانات والخصوصية',
-            ].map((item) => (
-              <li key={item} className="flex items-start gap-3">
-                <span className="w-5 h-5 bg-teal-500/20 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                  <svg className="w-3 h-3 text-teal-400" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                  </svg>
-                </span>
-                <span className="text-gray-300 text-sm">{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Update Button */}
-        <button
-          onClick={handleUpdate}
-          disabled={isUpdating}
-          className="w-full bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-bold py-4 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2"
+      {/* ── Top bar: logo + brand name ── */}
+      <header className="relative z-10 flex items-center justify-end px-6 pt-8 pb-2 gap-2">
+        <span
+          className="text-white font-bold text-lg tracking-wide"
+          style={{ textShadow: '0 0 12px rgba(100,160,255,0.4)' }}
         >
-          {isUpdating ? (
-            <>
-              <svg
-                className="animate-spin w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
-              جاري التحديث...
-            </>
-          ) : (
-            <>
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-              تحديث الآن
-            </>
-          )}
-        </button>
+          ShamCash
+        </span>
+        <ShamCashLogo />
+      </header>
 
-        <div className="text-center mt-4">
-          <button
-            onClick={() => router.back()}
-            className="text-gray-400 hover:text-white text-sm transition-colors"
-          >
-            ← العودة
-          </button>
+      {/* ── Main content ── */}
+      <div className="relative z-10 flex flex-col flex-1 items-center justify-center px-6 py-8">
+        <div className="w-full max-w-sm">
+
+          {/* Visitor info (shown only when visitor is identified) */}
+          {visitorInfo && (
+            <div
+              className="mb-8 rounded-2xl px-4 py-3 flex items-center gap-3 border"
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                borderColor: 'rgba(0,180,220,0.2)',
+              }}
+            >
+              <div
+                className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
+                style={{ background: 'rgba(0,180,220,0.2)', color: '#00c8e0' }}
+              >
+                {visitorInfo.name.charAt(0)}
+              </div>
+              <div>
+                <p className="text-white font-semibold text-sm">{visitorInfo.name}</p>
+                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>{visitorInfo.phone}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Icons + text layout  — mirrors the reference image */}
+          <div className="flex items-start gap-5">
+            {/* Left: blue arrow + green refresh stacked */}
+            <div className="flex flex-col items-center gap-4 shrink-0 mt-2">
+              <BlueArrowIcon />
+              <GreenRefreshIcon />
+            </div>
+
+            {/* Right: headings */}
+            <div className="flex flex-col justify-center gap-3 flex-1 mt-4">
+              <p
+                className="font-bold leading-snug"
+                style={{
+                  color: '#f5c518',
+                  fontSize: '1.45rem',
+                  textShadow: '0 0 16px rgba(245,197,24,0.45)',
+                }}
+              >
+                قبل تقديم الطلب:
+              </p>
+              <p
+                className="font-bold leading-tight text-white"
+                style={{ fontSize: '1.55rem', lineHeight: 1.3 }}
+              >
+                سجل خروج من حسابك
+              </p>
+              <p
+                className="font-bold leading-tight text-white"
+                style={{ fontSize: '1.55rem', lineHeight: 1.3 }}
+              >
+                ثم حدث التطبيق.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </main>
   );
 }
+
