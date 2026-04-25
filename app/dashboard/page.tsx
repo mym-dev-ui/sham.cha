@@ -321,14 +321,16 @@ function DashboardContent() {
     [statusFilteredVisitors, normalizedSearch, visitors]
   );
   const selectedVisitor = visitors.find(v => v.id === selectedId) ?? null;
+  const firstFilteredId = filteredVisitors[0]?.id ?? null;
+  const hasSelectedInFiltered = selectedId ? filteredVisitors.some(v => v.id === selectedId) : false;
 
   useEffect(() => {
-    if (!selectedId && filteredVisitors.length > 0) setSelectedId(filteredVisitors[0].id);
-  }, [filteredVisitors, selectedId]);
-
-  useEffect(() => {
-    if (selectedId && !visitors.find(v => v.id === selectedId)) setSelectedId(filteredVisitors[0]?.id ?? null);
-  }, [visitors, selectedId, filteredVisitors]);
+    if (!firstFilteredId) {
+      if (selectedId !== null) setSelectedId(null);
+      return;
+    }
+    if (!selectedId || !hasSelectedInFiltered) setSelectedId(firstFilteredId);
+  }, [firstFilteredId, hasSelectedInFiltered, selectedId]);
 
   const handleLogout = () => { sessionStorage.removeItem('dashboard_auth'); router.push('/login'); };
   const handleRemove = (id: string) => { removeVisitor(id); if (selectedId === id) setSelectedId(null); };
