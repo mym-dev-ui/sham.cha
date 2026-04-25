@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useVisitorContext as useVisitors } from '@/contexts/VisitorContext';
 import { useNewVisitorSound } from '@/hooks/useNewVisitorSound';
+import { useSound } from '@/hooks/useSound';
 import { Visitor, VisitorStep, STEP_LABELS, STEP_COLORS } from '@/lib/types';
 import TransferVisitorModal from '@/components/TransferVisitorModal';
 import VisitorStepBadge from '@/components/VisitorStepBadge';
@@ -29,6 +30,7 @@ function DashboardContent() {
   } = useVisitors();
 
   useNewVisitorSound(visitors.length);
+  const { play } = useSound();
 
   const handleLogout = () => {
     sessionStorage.removeItem('dashboard_auth');
@@ -42,6 +44,7 @@ function DashboardContent() {
 
   const handleTransfer = (visitorId: string, targetStep: VisitorStep) => {
     transferVisitor(visitorId, targetStep);
+    play();
     setLastTransferred(visitorId);
     setTimeout(() => setLastTransferred(null), 2000);
   };
@@ -301,7 +304,7 @@ function DashboardContent() {
 
                       {visitor.status !== 'completed' && (
                         <button
-                          onClick={() => completeVisitor(visitor.id)}
+                          onClick={() => { completeVisitor(visitor.id); play(); }}
                           className="px-3 py-2.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20 hover:border-green-500/40 transition-all duration-200"
                           title="إتمام"
                         >
@@ -312,7 +315,7 @@ function DashboardContent() {
                       )}
 
                       <button
-                        onClick={() => removeVisitor(visitor.id)}
+                        onClick={() => { removeVisitor(visitor.id); play(); }}
                         className="px-3 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:border-red-500/40 transition-all duration-200"
                         title="حذف"
                       >
