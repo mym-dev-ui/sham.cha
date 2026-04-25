@@ -78,9 +78,9 @@ function playAudioFile(path: string, options?: { volume?: number; playbackRate?:
  * verification-complete— step-3 verification screen success  (notification.mp3)
  * registration-complete— step-4 final registration done      (E5→G5→B5→C6→E6 fanfare)
  * login                — admin dashboard login success       (A4→E5 welcome)
-  * transfer             — visitor transferred in dashboard    (notification.mp3)
-  * approval             — visitor marked complete/approved    (notification.mp3, faster)
-  * rejection            — visitor removed/rejected            (notification.mp3, slower)
+ * transfer             — visitor transferred in dashboard    (notification.mp3)
+ * approval             — visitor marked complete/approved    (notification.mp3, faster)
+ * rejection            — visitor removed/rejected            (notification.mp3, slower)
  * alert                — validation error / general alert   (notification.mp3)
  */
 export type SoundEvent =
