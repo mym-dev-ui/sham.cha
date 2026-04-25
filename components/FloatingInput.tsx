@@ -47,10 +47,13 @@ export default function FloatingInput(props: FloatingInputProps) {
       {/* Floating label */}
       <label
         className={`
-          absolute right-4 pointer-events-none transition-all duration-200 font-medium
+          absolute pointer-events-none transition-all duration-200 font-medium
+          ${rightElement ? 'right-12' : 'right-4'}
           ${isFloating
             ? 'top-1.5 text-xs text-blue-400'
-            : 'top-1/2 -translate-y-1/2 text-sm text-gray-400'
+            : multiline
+              ? 'top-4 text-sm text-gray-400'
+              : 'top-1/2 -translate-y-1/2 text-sm text-gray-400'
           }
           ${error && isFloating ? 'text-red-400' : ''}
         `}

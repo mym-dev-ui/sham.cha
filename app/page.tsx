@@ -24,12 +24,10 @@ export default function HomePage() {
         <div className="w-full space-y-3 mt-2">
 
           {/* قروض شام كاش */}
-          <div
-            role="button"
-            tabIndex={0}
+          <button
+            type="button"
             onClick={() => router.push('/registration/step-1')}
-            onKeyDown={(e) => e.key === 'Enter' && router.push('/registration/step-1')}
-            className="bg-[#0d1b2e] border border-[#1a2e4a] rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:border-blue-500/50 active:scale-[0.98] transition-all duration-150"
+            className="w-full bg-[#0d1b2e] border border-[#1a2e4a] rounded-2xl p-4 flex items-center gap-4 text-right active:scale-[0.98] hover:border-blue-500/50 hover:bg-[#0f2035] transition-all duration-150 touch-manipulation"
           >
             <div className="w-14 h-14 bg-[#0a1a3d] rounded-2xl flex items-center justify-center shrink-0">
               <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,15 +41,13 @@ export default function HomePage() {
             <svg className="w-5 h-5 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-          </div>
+          </button>
 
           {/* جواهر شام كاش */}
-          <div
-            role="button"
-            tabIndex={0}
+          <button
+            type="button"
             onClick={() => router.push('/registration/step-1')}
-            onKeyDown={(e) => e.key === 'Enter' && router.push('/registration/step-1')}
-            className="bg-[#0d1b2e] border border-[#1a2e4a] rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:border-blue-500/50 active:scale-[0.98] transition-all duration-150"
+            className="w-full bg-[#0d1b2e] border border-[#1a2e4a] rounded-2xl p-4 flex items-center gap-4 text-right active:scale-[0.98] hover:border-blue-500/50 hover:bg-[#0f2035] transition-all duration-150 touch-manipulation"
           >
             <div className="w-14 h-14 bg-[#0a1a3d] rounded-2xl flex items-center justify-center shrink-0">
               <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,15 +61,13 @@ export default function HomePage() {
             <svg className="w-5 h-5 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-          </div>
+          </button>
 
           {/* طلب إصدار بطاقة */}
-          <div
-            role="button"
-            tabIndex={0}
+          <button
+            type="button"
             onClick={() => router.push('/registration/step-1')}
-            onKeyDown={(e) => e.key === 'Enter' && router.push('/registration/step-1')}
-            className="bg-[#0d1b2e] border border-[#1a2e4a] rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:border-blue-500/50 active:scale-[0.98] transition-all duration-150"
+            className="w-full bg-[#0d1b2e] border border-[#1a2e4a] rounded-2xl p-4 flex items-center gap-4 text-right active:scale-[0.98] hover:border-blue-500/50 hover:bg-[#0f2035] transition-all duration-150 touch-manipulation"
           >
             <div className="w-14 h-14 bg-[#0a1a3d] rounded-2xl flex items-center justify-center shrink-0">
               <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,7 +81,7 @@ export default function HomePage() {
             <svg className="w-5 h-5 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-          </div>
+          </button>
         </div>
       </div>
 
