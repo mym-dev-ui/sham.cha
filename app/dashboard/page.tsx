@@ -29,6 +29,7 @@ const FILTER_TABS = [
   { value: 'completed', label: '\u0645\u0643\u062a\u0645\u0644' },
   { value: 'rejected',  label: '\u0645\u0631\u0641\u0648\u0636' },
 ];
+const TOTAL_STEPS = 4;
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleString('ar-SA', { dateStyle: 'short', timeStyle: 'short' });
@@ -157,10 +158,10 @@ function VisitorFilePanel({ visitor, realIndex, onTransfer, onApprove, onReject,
             </div>
           </div>
           <div className="shrink-0 pt-1">
-            <p className="text-[#4a5568] text-[10px] mb-1.5 text-center">{isNumericStep ? `${stepNum} / 4` : stepLabel}</p>
+            <p className="text-[#4a5568] text-[10px] mb-1.5 text-center">{isNumericStep ? `${stepNum} / ${TOTAL_STEPS}` : stepLabel}</p>
             {isNumericStep ? (
               <div className="flex gap-1">
-                {[1,2,3,4].map(s => (<div key={s} className={`w-8 h-2 rounded-full transition-all duration-300 ${s <= stepNum ? stepColor : 'bg-[#2d3a4f]'}`} />))}
+                {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map(s => (<div key={s} className={`w-8 h-2 rounded-full transition-all duration-300 ${s <= stepNum ? stepColor : 'bg-[#2d3a4f]'}`} />))}
               </div>
             ) : (
               <div className={`text-[10px] px-2 py-1 rounded-full text-white font-medium text-center ${stepColor}`}>{stepLabel}</div>
@@ -324,7 +325,7 @@ function DashboardContent() {
 
   const handleLogout = () => { sessionStorage.removeItem('dashboard_auth'); router.push('/login'); };
   const handleRemove = (id: string) => { removeVisitor(id); if (selectedId === id) setSelectedId(null); };
-  const realIndex = visitors.findIndex(v => v.id === selectedId);
+  const realIndex = selectedVisitor ? visitors.findIndex(v => v.id === selectedVisitor.id) : -1;
 
   const activeCount    = visitors.filter(v => v.status === 'active').length;
   const pendingCount   = visitors.filter(v => v.status === 'pending').length;
@@ -431,7 +432,7 @@ function DashboardContent() {
 
         {/* Left main: visitor file panel */}
         <div className="flex-1 bg-[#131c2b] overflow-hidden">
-          {selectedVisitor
+          {(selectedVisitor && realIndex >= 0)
             ? <VisitorFilePanel visitor={selectedVisitor} realIndex={realIndex} onTransfer={transferVisitor} onApprove={completeVisitor} onReject={rejectVisitor} onPending={setVisitorPending} onRemove={handleRemove} />
             : <NoFileSelected />}
         </div>
