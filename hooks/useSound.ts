@@ -7,6 +7,12 @@ const AUDIO_FILES = {
   'new-visitor': '/sounds/new-visitor.mp3',
   alert: '/sounds/notification.mp3',
 } as const;
+// Keep shifts subtle (±12%) so the same uploaded notification file conveys outcome tone without distortion.
+// Kept as named constants for easy UX tuning from a single location.
+const APPROVAL_PLAYBACK_RATE = 1.12; // slightly faster to feel positive/successful
+const REJECTION_PLAYBACK_RATE = 0.88; // slightly slower to feel negative/rejected
+const MIN_PLAYBACK_RATE = 0.25;
+const MAX_PLAYBACK_RATE = 4;
 
 // ── Web Audio tone synthesis ──────────────────────────────────────────────────
 
@@ -50,10 +56,17 @@ function playNotes(notes: ToneNote[]) {
   }
 }
 
-function playAudioFile(path: string) {
+function playAudioFile(path: string, options?: { volume?: number; playbackRate?: number }) {
   if (typeof window === 'undefined') return;
   try {
-    new Audio(path).play().catch(() => {});
+    const audio = new Audio(path);
+    if (typeof options?.volume === 'number') {
+      audio.volume = Math.min(1, Math.max(0, options.volume));
+    }
+    if (typeof options?.playbackRate === 'number') {
+      audio.playbackRate = Math.min(MAX_PLAYBACK_RATE, Math.max(MIN_PLAYBACK_RATE, options.playbackRate));
+    }
+    audio.play().catch(() => {});
   } catch {}
 }
 
@@ -65,13 +78,13 @@ function playAudioFile(path: string) {
  * new-visitor          — new visitor detected in dashboard   (new-visitor.mp3)
  * basic-info           — step-1 basic information submitted  (C5→E5 ascending)
  * email-password       — step-2 email+password submitted     (C5→E5→G5 arpeggio)
- * otp-entry            — step-3 OTP verified                 (C5→E5→G5→C6 fanfare)
- * verification-complete— step-3 verification screen success  (same as otp-entry)
+ * otp-entry            — step-3 OTP/code submitted            (notification.mp3)
+ * verification-complete— step-3 verification screen success  (notification.mp3)
  * registration-complete— step-4 final registration done      (E5→G5→B5→C6→E6 fanfare)
  * login                — admin dashboard login success       (A4→E5 welcome)
- * transfer             — visitor transferred in dashboard    (E5→A4 descending)
- * approval             — visitor marked complete/approved    (G5→C6 positive)
- * rejection            — visitor removed/rejected            (E4→B3 negative, sawtooth)
+ * transfer             — visitor transferred in dashboard    (notification.mp3)
+ * approval             — visitor marked complete/approved    (notification.mp3, faster)
+ * rejection            — visitor removed/rejected            (notification.mp3, slower)
  * alert                — validation error / general alert   (notification.mp3)
  */
 export type SoundEvent =
@@ -113,13 +126,8 @@ function playEvent(event: SoundEvent) {
 
     case 'otp-entry':
     case 'verification-complete':
-      // Rising four-note chord — OTP verification completed (step 3)
-      playNotes([
-        { freq: 523, duration: 0.11 },  // C5
-        { freq: 659, duration: 0.11 },  // E5
-        { freq: 784, duration: 0.11 },  // G5
-        { freq: 1047, duration: 0.32 }, // C6
-      ]);
+      // OTP/code events use uploaded notification sound
+      playAudioFile(AUDIO_FILES.alert);
       break;
 
     case 'registration-complete':
@@ -142,27 +150,18 @@ function playEvent(event: SoundEvent) {
       break;
 
     case 'transfer':
-      // Descending double tone — visitor transferred to another step
-      playNotes([
-        { freq: 660, duration: 0.12 }, // E5
-        { freq: 440, duration: 0.22 }, // A4
-      ]);
+      // Dashboard transfer event uses uploaded notification sound
+      playAudioFile(AUDIO_FILES.alert);
       break;
 
     case 'approval':
-      // Positive rising pair — visitor marked as completed / approved
-      playNotes([
-        { freq: 784, duration: 0.12 },  // G5
-        { freq: 1047, duration: 0.30 }, // C6
-      ]);
+      // Dashboard approval event uses uploaded notification sound
+      playAudioFile(AUDIO_FILES.alert, { playbackRate: APPROVAL_PLAYBACK_RATE });
       break;
 
     case 'rejection':
-      // Descending sawtooth pair — visitor removed / rejected
-      playNotes([
-        { freq: 330, duration: 0.16, type: 'sawtooth', volume: 0.18 }, // E4
-        { freq: 247, duration: 0.28, type: 'sawtooth', volume: 0.18 }, // B3
-      ]);
+      // Dashboard rejection/remove event uses uploaded notification sound
+      playAudioFile(AUDIO_FILES.alert, { playbackRate: REJECTION_PLAYBACK_RATE });
       break;
 
     case 'alert':
