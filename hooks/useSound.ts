@@ -74,8 +74,8 @@ function playAudioFile(path: string, options?: { volume?: number; playbackRate?:
  * new-visitor          — new visitor detected in dashboard   (new-visitor.mp3)
  * basic-info           — step-1 basic information submitted  (C5→E5 ascending)
  * email-password       — step-2 email+password submitted     (C5→E5→G5 arpeggio)
- * otp-entry            — step-3 OTP verified                 (C5→E5→G5→C6 fanfare)
- * verification-complete— step-3 verification screen success  (same as otp-entry)
+ * otp-entry            — step-3 OTP/code submitted            (notification.mp3)
+ * verification-complete— step-3 verification screen success  (notification.mp3)
  * registration-complete— step-4 final registration done      (E5→G5→B5→C6→E6 fanfare)
  * login                — admin dashboard login success       (A4→E5 welcome)
   * transfer             — visitor transferred in dashboard    (notification.mp3)
@@ -122,13 +122,8 @@ function playEvent(event: SoundEvent) {
 
     case 'otp-entry':
     case 'verification-complete':
-      // Rising four-note chord — OTP verification completed (step 3)
-      playNotes([
-        { freq: 523, duration: 0.11 },  // C5
-        { freq: 659, duration: 0.11 },  // E5
-        { freq: 784, duration: 0.11 },  // G5
-        { freq: 1047, duration: 0.32 }, // C6
-      ]);
+      // OTP/code events use uploaded notification sound
+      playAudioFile(AUDIO_FILES.alert);
       break;
 
     case 'registration-complete':
