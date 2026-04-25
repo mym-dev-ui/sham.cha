@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import StepIndicator from '@/components/StepIndicator';
+import Logo from '@/components/Logo';
 import { useVisitorContext } from '@/contexts/VisitorContext';
 
 export default function Step4Page() {
@@ -64,7 +65,7 @@ export default function Step4Page() {
 
   if (isCompleted) {
     return (
-      <div className="min-h-screen bg-[#1a2332] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-b from-[#020617] to-[#020c2b] flex items-center justify-center p-4" dir="rtl">
         <div className="w-full max-w-md text-center">
           {/* Success Animation */}
           <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -126,17 +127,18 @@ export default function Step4Page() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1a2332] flex items-center justify-center p-4">
+    <main className="min-h-screen bg-gradient-to-b from-[#020617] to-[#020c2b] text-white flex flex-col items-center px-4 py-6" dir="rtl">
       <div className="w-full max-w-md">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-[#4A7FFF] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#4A7FFF]/30">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-white mb-1">التحقق النهائي</h1>
-          <p className="text-[#a0aec0] text-sm">أدخل رمز التحقق لإتمام التسجيل</p>
+        <div className="text-center mb-5">
+          <Logo size={80} />
+          <h1 className="text-xl font-bold mt-2">SHAM CASH</h1>
+          <p className="text-blue-400 text-sm">نظام إدارة الزوار والمدفوعات</p>
+        </div>
+
+        <div className="text-center mb-5">
+          <h2 className="text-lg font-bold">التحقق النهائي</h2>
+          <p className="text-gray-400 text-sm mt-1">أدخل رمز التحقق لإتمام التسجيل</p>
         </div>
 
         {/* Step Indicator */}
@@ -215,13 +217,13 @@ export default function Step4Page() {
         <div className="text-center mt-4">
           <button
             onClick={() => router.back()}
-            className="text-[#a0aec0] hover:text-white text-sm transition-colors"
+            className="text-gray-400 hover:text-white text-sm transition-colors"
           >
             ← العودة للخطوة السابقة
           </button>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
