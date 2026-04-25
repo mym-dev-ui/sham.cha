@@ -19,7 +19,7 @@ export interface Visitor {
   currentStep: VisitorStep;
   registrationData: RegistrationData;
   createdAt: string;
-  status: 'active' | 'completed' | 'pending';
+  status: 'active' | 'completed' | 'pending' | 'rejected';
 }
 
 export const STEP_LABELS: Record<string, string> = {

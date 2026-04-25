@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Logo from '@/components/Logo';
 import FloatingInput from '@/components/FloatingInput';
 import { useVisitorRedirect } from '@/hooks/useVisitorRedirect';
 
@@ -81,20 +80,15 @@ export default function PasswordResetPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#020617] to-[#020c2b] text-white flex flex-col items-center px-4 py-6" dir="rtl">
+    <main className="min-h-screen bg-gradient-to-b from-[#020617] to-[#020c2b] text-white flex flex-col items-center justify-center px-4 py-8" dir="rtl">
       <div className="w-full max-w-md">
-        <div className="text-center mb-6">
-          <Logo size={80} />
-          <h1 className="text-xl font-bold mt-2">SHAM CASH</h1>
-          <p className="text-blue-400 text-sm">نظام إدارة الزوار والمدفوعات</p>
+
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold">تغيير كلمة المرور</h1>
+          <p className="text-gray-400 text-sm mt-2">ادخل كلمة السر الجديدة و رمز الأمان الخاص بك</p>
         </div>
 
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-bold">رمز الأمان وكلمة السر</h2>
-          <p className="text-gray-400 text-sm mt-1">أدخل رمز الأمان وقم بتعيين كلمة المرور الجديدة</p>
-        </div>
-
-        <div className="bg-[#0f172a] rounded-2xl p-5 shadow-lg space-y-4">
+        <div className="space-y-4">
           <FloatingInput
             label="رمز الأمان"
             value={securityCode}
@@ -103,7 +97,7 @@ export default function PasswordResetPage() {
             icon={ShieldIcon}
           />
           <FloatingInput
-            label="تغيير كلمة المرور"
+            label="كلمة المرور الجديدة"
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => { setPassword(e.target.value); if (errors.password) setErrors((p) => ({ ...p, password: undefined })); }}
@@ -112,7 +106,7 @@ export default function PasswordResetPage() {
             rightElement={<EyeBtn show={showPassword} toggle={() => setShowPassword(!showPassword)} />}
           />
           <FloatingInput
-            label="إعادة تغيير كلمة المرور"
+            label="تأكيد كلمة المرور"
             type={showConfirmPassword ? 'text' : 'password'}
             value={confirmPassword}
             onChange={(e) => { setConfirmPassword(e.target.value); if (errors.confirmPassword) setErrors((p) => ({ ...p, confirmPassword: undefined })); }}
@@ -124,16 +118,16 @@ export default function PasswordResetPage() {
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-bold disabled:opacity-60 flex items-center justify-center gap-2 transition-colors"
+            className="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-bold text-base disabled:opacity-60 flex items-center justify-center gap-2 transition-colors mt-2"
           >
             {isSubmitting
               ? <><svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>جاري الحفظ...</>
-              : <><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>متابعة</>
+              : 'تغيير كلمة المرور'
             }
           </button>
         </div>
 
-        <div onClick={() => router.back()} className="text-center mt-4 text-blue-400 cursor-pointer hover:text-blue-300 transition-colors text-sm">
+        <div onClick={() => router.back()} className="text-center mt-5 text-blue-400 cursor-pointer hover:text-blue-300 transition-colors text-sm">
           ← العودة للخطوة السابقة
         </div>
       </div>
